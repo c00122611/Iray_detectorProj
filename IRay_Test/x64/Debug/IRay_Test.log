@@ -1,0 +1,4 @@
+﻿  init.cpp
+D:\CPPRepos\IRay_Test\IRay_Test\Detector.h(180,1): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
+D:\CPPRepos\IRay_Test\IRay_Test\init.cpp(64): message : 查看对正在编译的函数 模板 实例化“FPDRESULT CDetector::SyncInvoke<int>(int,int)”的引用
+  IRay_Test.vcxproj -> D:\CPPRepos\IRay_Test\x64\Debug\IRay_Test.exe

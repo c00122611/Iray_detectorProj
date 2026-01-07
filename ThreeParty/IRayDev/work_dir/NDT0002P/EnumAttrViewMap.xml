@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<iDetectorEnumView xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <EnumAttrList>
+      <EnumAttr name="Enm_TriggerMode" id="2506">
+        <EnumItem displayname="Enm_TriggerMode_Soft" value="2" />
+        <EnumItem displayname="Enm_TriggerMode_AED_DC" value="6" />
+        <EnumItem displayname="Enm_TriggerMode_AED_AC" value="7" />
+      </EnumAttr>
+      <EnumAttr name="Enm_ExpMode" id="2528">
+        <EnumItem displayname="Enm_ExpMode_Null" value="0" />
+        <EnumItem displayname="Enm_ExpMode_Continous" value="129" />
+      </EnumAttr>
+  </EnumAttrList>
+</iDetectorEnumView>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<iDetectorEnumView xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <EnumAttrList>
+      <EnumAttr name="Enm_ImageEnergyType" id="2101">
+        <EnumItem displayname="ImageEnergy_Bottom" value="1" />
+        <EnumItem displayname="ImageEnergy_Top" value="2" />
+        <EnumItem displayname="ImageEnergy_All" value="3" />
+      </EnumAttr>
+      <EnumAttr name="Enm_ImageEnergyType" id="2569">
+        <EnumItem displayname="ImageEnergy_Bottom" value="1" />
+        <EnumItem displayname="ImageEnergy_Top" value="2" />
+        <EnumItem displayname="ImageEnergy_All" value="3" />
+      </EnumAttr>
+  </EnumAttrList>
+</iDetectorEnumView>

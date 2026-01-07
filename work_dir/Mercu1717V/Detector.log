@@ -1,0 +1,17 @@
+A2026-01-04 18:57:13.970 497c =============================================================================================
+A2026-01-04 18:57:13.972 497c Start to initialize detector object, ID = 1, work_dir = 'D:\CPPRepos\IRay_Test\work_dir\Mercu1717V\'
+A2026-01-04 18:57:14.028 497c Load vtMap succeed
+A2026-01-04 18:57:14.028 497c Init attributes succeed
+A2026-01-04 18:57:14.036 497c Init ConfigManager succeed
+A2026-01-04 18:57:14.096 497c Init ConnectionImpl succeed
+A2026-01-04 18:57:14.102 497c Init CalibrationImpl succeed
+A2026-01-04 18:57:14.129 497c SDK Version: 4.4.6.13659 
+A2026-01-04 18:57:14.129 497c Communication module: ConnSGDMA 
+A2026-01-04 18:57:14.344 497c Initialize detector object completed, ID = 1
+A2026-01-04 18:57:18.457 497c -------------- Invoke task started, Cmd = Cmd_Connect --------------
+A2026-01-04 18:57:18.457 497c CDetectorE4::Invoke(2, 0Parameters), FSMState:6
+I2026-01-04 18:57:18.457 497c State changed from State_Unknown to State_Busy
+A2026-01-04 18:57:18.457 497c Invoke returned, Cmd = Cmd_Connect, Task is pending
+I2026-01-04 18:57:18.458 7044 State changed from State_Busy to State_Unknown
+E2026-01-04 18:57:18.565 7044 CDetectorE4::connect failed, errorcode:"Communication device not found"!
+A2026-01-04 18:57:18.565 7044 Pending task completed taskid:2, errorcode:34

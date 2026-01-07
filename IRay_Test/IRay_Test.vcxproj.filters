@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="IrayBase">
+      <UniqueIdentifier>{3d71e1f2-9167-4334-9733-778621e88f5d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Init">
+      <UniqueIdentifier>{c5d0bfb3-5c63-419f-8847-5135675f3f52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Calibration">
+      <UniqueIdentifier>{6bb8281d-b1e6-49cb-8197-5e2828281e4a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Detector.cpp">
+      <Filter>IrayBase</Filter>
+    </ClCompile>
+    <ClCompile Include="winevent.cpp">
+      <Filter>IrayBase</Filter>
+    </ClCompile>
+    <ClCompile Include="initTest.cpp">
+      <Filter>Init</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="IrayInclude.h">
+      <Filter>IrayBase</Filter>
+    </ClInclude>
+    <ClInclude Include="util.h">
+      <Filter>IrayBase</Filter>
+    </ClInclude>
+    <ClInclude Include="Detector.h">
+      <Filter>IrayBase</Filter>
+    </ClInclude>
+    <ClInclude Include="DisplayProgressbar.h">
+      <Filter>IrayBase</Filter>
+    </ClInclude>
+    <ClInclude Include="winevent.h">
+      <Filter>IrayBase</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Init</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Init</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
