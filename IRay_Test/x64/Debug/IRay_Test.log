@@ -1,15 +1,5 @@
 ﻿   Qt/MSBuild: 3.4.1.0
   Reading Qt configuration (D:/developEnv/Qt/Qt5.14.2/5.14.2/msvc2017_64/bin/qmake)
    Qt: 5.14.2
-  moc IrayWidget.h
-  calibrationTest.cpp
-  Detector.cpp
   IrayWidget.cpp
-  main.cpp
-  winevent.cpp
-D:\CPPRepos\Iray_git\IRay_Test\Detector.h(179,1): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据 (编译源文件 calibrationTest.cpp)
-D:\CPPRepos\Iray_git\IRay_Test\calibrationTest.cpp(141): message : 查看对正在编译的函数 模板 实例化“FPDRESULT CDetector::SyncInvoke<int>(int,int)”的引用
-D:\CPPRepos\Iray_git\IRay_Test\Detector.h(152,1): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据 (编译源文件 calibrationTest.cpp)
-D:\CPPRepos\Iray_git\IRay_Test\calibrationTest.cpp(193): message : 查看对正在编译的函数 模板 实例化“FPDRESULT CDetector::Invoke<int>(int,int)”的引用
-  moc_IrayWidget.cpp
   IRay_Test.vcxproj -> D:\CPPRepos\Iray_git\x64\Debug\IRay_Test.exe

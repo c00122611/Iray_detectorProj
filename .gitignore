@@ -56,3 +56,14 @@ ui_*.h
 *.qm
 *.prl
 
+# Visual Studio 相关临时文件
+.vs/
+*.ipch
+*.sdf
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+# 其他临时文件
+*.tmp
+*.log
