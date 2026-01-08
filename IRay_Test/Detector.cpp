@@ -185,7 +185,6 @@ FPDRESULT CDetector::SetAttr(int nAttrID, int nValue)
 	}
 	return result;
 }
-
 FPDRESULT CDetector::SetAttr(int nAttrID, float fValue)
 {
 	if (!m_bInitilized)
@@ -243,7 +242,6 @@ int CDetector::GetAttr(int nAttrID, AttrResult& result)
 	}
     return Err_OK;
 }
-
 int CDetector::GetAttr(int nAttrID, int& retV)
 {
     IRayVariant var;

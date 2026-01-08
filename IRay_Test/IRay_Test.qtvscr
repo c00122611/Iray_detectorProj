@@ -1,0 +1,429 @@
+<FlowDocument xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" FontFamily="Segoe UI" FontSize="12">
+  <FlowDocument.Tag><![CDATA[{
+  "timestamp": "2026-01-08 11:12:03",
+  "files": {
+    "D:\\CPPRepos\\Iray_git\\IRay_Test\\IRay_Test.vcxproj": {
+      "before": "7VlRb+I4EN7nle4vnFC0J9qHEgq9tncNWXUDi9BRWgFtX05CJhjIbRJHttOWu73/fuPEdggNS1Fv2e2qfaiEPbbHX775xmO//fnNG+v9Q+CX7jBlHgkbxmGlapRw6JKJF84aRsynB6fGe/unt9YVJX9hl5eaeIpinw8RnWHOGsaH2PMnRglmCeHXnPPod9Nk7hwHiFUCz6WEkSmvuCQwJ/gO+yTC1AzYWAwza9Vq3YDZSyWrw3HQpiSOSl00xn7DkAs6JJx6s5giDg6y1BjMi3pLndD14wluGE08jmefb72wXlMjYExuKjuxscx8o3BF/FlXPuJTQgM7mcQy9e/UAhpSPIqGb3Cuj32MGN7gnrT6Fg6m6D0cHz0XO5jiqyD3JdeejNuWzlmmZmhKWCAAUJkvcqRt+2SM/IymN47kyU0aYfbhcaVqmY+aJav+wIt7Qicp6cRIy1RN0kJO1469if3PqXtcP5nWTw7wpHp6cHRS/fXgt5PJ+ODEHZ/iQ7fm4trhv5qqyRg5TZ8Q3kMBZhFysd3po8UQM26Z+XZpDCEwIfcsDXkVCHpDVbGhL5qIaRIvMrxkzAcRobwk99Qw3u3dOFJYrhCf7/95ofXDiaKKlJ5KBMgzo2QWfQeIx4knpKJhlN/t5aJz//O7PeX9frnRKC+pRNlQspMbogIgLx3DRYTt8yjyPTdRpZUYTboldNcMJ6t0vTFF1MPM5jTGlvm4XQ5QDg4J8Rnm9t3hUS2LIdUqjZ05osjlmA7A8jr0QLZh7lzrWuwB9OxzlLaBLadfuwNuCnH1vyF3Oyc+BghmFAWXEfcC7+/kU8rPs7b7mwKvdXl3oP84bAW53x1sPwpXO9sJdF6Y08G59Nh64DgUJ00QLA4nTJkoIbcmCyW2y6khN3gAaocnqSQ/bYTSuMEcw1nV2Erlcskh8QmS2GM8QMipSJpNj66mq6VsU4nBTOWtJa3FDx7jbA8y1dbzlPd1yuoSF/mQj5qII5U/dHp8ErTPAWolHbxCpauVNQeORIleLkwFYdChaKHYLU9lO6PdC0ezQMhUMObET+jDBRLVtI7svN2Sqmx38FVM7HrhJyigKQ5wyJEvT0KrrV//PLnOH5lTd+DQ0jlrnTPpuWgHvih1zdF8dd1toRGVLBRTXphUSinPns0fx3dIEHk+lpiBTtwiGkKW74p7Hzv5X4dScbkxPU+D6aDZdebY/SRpp39qgyuKI0pczBihme/Mvu306rWzUbP14bp9NnIue4PLbuvsl7019vuiEC2eSS8FUIirHxS6+AIqKunSamtqDuXWyr4t8XUyDAbxeLBgALgNEzCoOiwza9JLtnGI4YorLRY76fKiipVrr+1WTug102uKDKDlI9Uzv7qiYnIjVs5K45X9b/fdP8ahKzaasEPsAvgiN13YpRHrhJx6cJZ0lZkqrQs69CBNqzR+9U9tsI4bKct6L5xlrRCNfexcXjTPhx+JL+54JdZFPRoUWSDjPp5iCpfD+hajoEMPWkvZFPq13ekElrkLRhcI/Wo0b8dmTaht+TVy+sPRoOVc91uj3uXo9rzf6/Tag1ddU1q6A13Lpdjn8UBp0neuautY96pz35/OZYkcJEmzM3vygisAcccscqm4yq+4UaQqheIBTczhPY/QzZb3XggnuDA3ZxqPmVPZ+506Mju+fI7LfNRLznOuPbbzWOSjBRQ4MwoHvjGilQ0jRAUqp9lkyvgETR82WfHkfRPeRTcZxtzzN9loAPUuHsO33U1b6l5WCy7dn6mHDH3XJl9Uii/O9OuQ/R8=",
+      "after": "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"
+    }
+  }
+}]]></FlowDocument.Tag>
+  <Section Margin="0,24" TextAlignment="Center">
+    <Paragraph FontSize="24" FontWeight="Bold" Margin="12,0">
+      <LineBreak />
+      <Span Foreground="Gray">Qt Visual Studio Tools</Span>
+    </Paragraph>
+    <Paragraph FontSize="42" Margin="12,0" FontWeight="Bold">
+      <Span TextDecorations="Underline">Project Format Conversion</Span>
+    </Paragraph>
+    <Paragraph Margin="12,8" FontSize="18">
+      <Span>Report generated on 2026-01-08 11:12:03</Span>
+    </Paragraph>
+  </Section>
+  <Section>
+    <Paragraph FontSize="32" FontWeight="Bold" Margin="12,0">
+      <Span>Files</Span>
+    </Paragraph>
+    <Paragraph Margin="24,12,0,0">
+      <Span FontFamily="Consolas" FontSize="14" Background="WhiteSmoke"><![CDATA[D:\CPPRepos\Iray_git\IRay_Test\IRay_Test.vcxproj]]></Span>
+      <LineBreak />
+      <Hyperlink NavigateUri="file://D:\CPPRepos\Iray_git\IRay_Test\IRay_Test.vcxproj?before">[Before]</Hyperlink>
+      <Hyperlink NavigateUri="file://D:\CPPRepos\Iray_git\IRay_Test\IRay_Test.vcxproj?after">[After]</Hyperlink>
+      <Hyperlink NavigateUri="file://D:\CPPRepos\Iray_git\IRay_Test\IRay_Test.vcxproj?diff&amp;before&amp;after">
+                        [Diff before/after]
+                    </Hyperlink>
+      <Hyperlink NavigateUri="file://D:\CPPRepos\Iray_git\IRay_Test\IRay_Test.vcxproj?diff&amp;before&amp;current">
+                        [Diff before/current]
+                    </Hyperlink>
+      <Hyperlink NavigateUri="file://D:\CPPRepos\Iray_git\IRay_Test\IRay_Test.vcxproj?diff&amp;after&amp;current">
+                        [Diff after/current]
+                    </Hyperlink>
+      <LineBreak />
+    </Paragraph>
+  </Section>
+  <Section>
+    <Paragraph FontSize="32" FontWeight="Bold" Margin="12,0">
+      <Span>Changes</Span>
+    </Paragraph>
+    <Paragraph FontSize="20" FontWeight="Bold" Margin="12">
+      <Span><![CDATA[🡺 Enabling multi-processor compilation]]></Span>
+    </Paragraph>
+    <Table CellSpacing="0" BorderBrush="Gray" BorderThickness="0.5">
+      <Table.Columns>
+        <TableColumn />
+        <TableColumn />
+      </Table.Columns>
+      <TableRowGroup>
+        <TableRow Background="Orange">
+          <TableCell ColumnSpan="2" BorderThickness="0.5" BorderBrush="Gray">
+            <Paragraph Margin="10,5" FontWeight="Bold">
+              <Span><![CDATA[D:\CPPRepos\Iray_git\IRay_Test\IRay_Test.vcxproj]]></Span>
+            </Paragraph>
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell ColumnSpan="2" Background="WhiteSmoke" BorderBrush="Gray" BorderThickness="0.5" />
+        </TableRow>
+        <TableRow>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0" />
+          </TableCell>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0">
+              <Span Background="LightGreen"><![CDATA[      <MultiProcessorCompilation>true</MultiProcessorCompilation>]]></Span>
+            </Paragraph>
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell ColumnSpan="2" Background="WhiteSmoke" BorderBrush="Gray" BorderThickness="0.5" />
+        </TableRow>
+        <TableRow>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0" />
+          </TableCell>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0">
+              <Span Background="LightGreen"><![CDATA[      <MultiProcessorCompilation>true</MultiProcessorCompilation>]]></Span>
+            </Paragraph>
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell ColumnSpan="2" Background="WhiteSmoke" BorderBrush="Gray" BorderThickness="0.5" />
+        </TableRow>
+        <TableRow>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0" />
+          </TableCell>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0">
+              <Span Background="LightGreen"><![CDATA[      <MultiProcessorCompilation>true</MultiProcessorCompilation>]]></Span>
+            </Paragraph>
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell ColumnSpan="2" Background="WhiteSmoke" BorderBrush="Gray" BorderThickness="0.5" />
+        </TableRow>
+        <TableRow>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0" />
+          </TableCell>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0">
+              <Span Background="LightGreen"><![CDATA[      <MultiProcessorCompilation>true</MultiProcessorCompilation>]]></Span>
+            </Paragraph>
+          </TableCell>
+        </TableRow>
+      </TableRowGroup>
+    </Table>
+    <Paragraph FontSize="20" FontWeight="Bold" Margin="12">
+      <Span><![CDATA[🡺 Project format version]]></Span>
+    </Paragraph>
+    <Table CellSpacing="0" BorderBrush="Gray" BorderThickness="0.5">
+      <Table.Columns>
+        <TableColumn />
+        <TableColumn />
+      </Table.Columns>
+      <TableRowGroup>
+        <TableRow Background="Orange">
+          <TableCell ColumnSpan="2" BorderThickness="0.5" BorderBrush="Gray">
+            <Paragraph Margin="10,5" FontWeight="Bold">
+              <Span><![CDATA[D:\CPPRepos\Iray_git\IRay_Test\IRay_Test.vcxproj]]></Span>
+            </Paragraph>
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell ColumnSpan="2" Background="WhiteSmoke" BorderBrush="Gray" BorderThickness="0.5" />
+        </TableRow>
+        <TableRow>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0" />
+          </TableCell>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0">
+              <Span Background="LightGreen"><![CDATA[    <Keyword>QtVS_v304</Keyword>]]></Span>
+            </Paragraph>
+          </TableCell>
+        </TableRow>
+      </TableRowGroup>
+    </Table>
+    <Paragraph FontSize="20" FontWeight="Bold" Margin="12">
+      <Span><![CDATA[🡺 Fallback for QTMSBUILD environment variable]]></Span>
+    </Paragraph>
+    <Table CellSpacing="0" BorderBrush="Gray" BorderThickness="0.5">
+      <Table.Columns>
+        <TableColumn />
+        <TableColumn />
+      </Table.Columns>
+      <TableRowGroup>
+        <TableRow Background="Orange">
+          <TableCell ColumnSpan="2" BorderThickness="0.5" BorderBrush="Gray">
+            <Paragraph Margin="10,5" FontWeight="Bold">
+              <Span><![CDATA[D:\CPPRepos\Iray_git\IRay_Test\IRay_Test.vcxproj]]></Span>
+            </Paragraph>
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell ColumnSpan="2" Background="WhiteSmoke" BorderBrush="Gray" BorderThickness="0.5" />
+        </TableRow>
+        <TableRow>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0" />
+          </TableCell>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0">
+              <Span Background="LightGreen"><![CDATA[    <QtMsBuild Condition="'$(QtMsBuild)'=='' OR !Exists('$(QtMsBuild)\qt.targets')">$(MSBuildProjectDirectory)\QtMsBuild</QtMsBuild>]]></Span>
+            </Paragraph>
+          </TableCell>
+        </TableRow>
+      </TableRowGroup>
+    </Table>
+    <Paragraph FontSize="20" FontWeight="Bold" Margin="12">
+      <Span><![CDATA[🡺 Default Qt properties]]></Span>
+    </Paragraph>
+    <Table CellSpacing="0" BorderBrush="Gray" BorderThickness="0.5">
+      <Table.Columns>
+        <TableColumn />
+        <TableColumn />
+      </Table.Columns>
+      <TableRowGroup>
+        <TableRow Background="Orange">
+          <TableCell ColumnSpan="2" BorderThickness="0.5" BorderBrush="Gray">
+            <Paragraph Margin="10,5" FontWeight="Bold">
+              <Span><![CDATA[D:\CPPRepos\Iray_git\IRay_Test\IRay_Test.vcxproj]]></Span>
+            </Paragraph>
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell ColumnSpan="2" Background="WhiteSmoke" BorderBrush="Gray" BorderThickness="0.5" />
+        </TableRow>
+        <TableRow>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0" />
+          </TableCell>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0">
+              <Span Background="LightGreen"><![CDATA[  <Import Project="$(QtMsBuild)\qt_defaults.props" Condition="Exists('$(QtMsBuild)\qt_defaults.props')" />]]></Span>
+            </Paragraph>
+          </TableCell>
+        </TableRow>
+      </TableRowGroup>
+    </Table>
+    <Paragraph FontSize="20" FontWeight="Bold" Margin="12">
+      <Span><![CDATA[🡺 Qt build settings]]></Span>
+    </Paragraph>
+    <Table CellSpacing="0" BorderBrush="Gray" BorderThickness="0.5">
+      <Table.Columns>
+        <TableColumn />
+        <TableColumn />
+      </Table.Columns>
+      <TableRowGroup>
+        <TableRow Background="Orange">
+          <TableCell ColumnSpan="2" BorderThickness="0.5" BorderBrush="Gray">
+            <Paragraph Margin="10,5" FontWeight="Bold">
+              <Span><![CDATA[D:\CPPRepos\Iray_git\IRay_Test\IRay_Test.vcxproj]]></Span>
+            </Paragraph>
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell ColumnSpan="2" Background="WhiteSmoke" BorderBrush="Gray" BorderThickness="0.5" />
+        </TableRow>
+        <TableRow>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0" />
+          </TableCell>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0">
+              <Span Background="LightGreen"><![CDATA[  <PropertyGroup Label="QtSettings" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />]]></Span>
+            </Paragraph>
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0" />
+          </TableCell>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0">
+              <Span Background="LightGreen"><![CDATA[  <PropertyGroup Label="QtSettings" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />]]></Span>
+            </Paragraph>
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0" />
+          </TableCell>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0">
+              <Span Background="LightGreen"><![CDATA[  <PropertyGroup Label="QtSettings" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />]]></Span>
+            </Paragraph>
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0" />
+          </TableCell>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0">
+              <Span Background="LightGreen"><![CDATA[  <PropertyGroup Label="QtSettings" Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />]]></Span>
+            </Paragraph>
+          </TableCell>
+        </TableRow>
+      </TableRowGroup>
+    </Table>
+    <Paragraph FontSize="20" FontWeight="Bold" Margin="12">
+      <Span><![CDATA[🡺 Warn if Qt/MSBuild is not found]]></Span>
+    </Paragraph>
+    <Table CellSpacing="0" BorderBrush="Gray" BorderThickness="0.5">
+      <Table.Columns>
+        <TableColumn />
+        <TableColumn />
+      </Table.Columns>
+      <TableRowGroup>
+        <TableRow Background="Orange">
+          <TableCell ColumnSpan="2" BorderThickness="0.5" BorderBrush="Gray">
+            <Paragraph Margin="10,5" FontWeight="Bold">
+              <Span><![CDATA[D:\CPPRepos\Iray_git\IRay_Test\IRay_Test.vcxproj]]></Span>
+            </Paragraph>
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell ColumnSpan="2" Background="WhiteSmoke" BorderBrush="Gray" BorderThickness="0.5" />
+        </TableRow>
+        <TableRow>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0" />
+          </TableCell>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0">
+              <Span Background="LightGreen"><![CDATA[  <Target Name="QtMsBuildNotFound" BeforeTargets="CustomBuild;ClCompile" Condition="!Exists('$(QtMsBuild)\qt.targets') OR !Exists('$(QtMsBuild)\Qt.props')">]]></Span>
+            </Paragraph>
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0" />
+          </TableCell>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0">
+              <Span Background="LightGreen"><![CDATA[    <Message Importance="High" Text="QtMsBuild: could not locate qt.targets, qt.props; project may not build correctly." />]]></Span>
+            </Paragraph>
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0" />
+          </TableCell>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0">
+              <Span Background="LightGreen"><![CDATA[  </Target>]]></Span>
+            </Paragraph>
+          </TableCell>
+        </TableRow>
+      </TableRowGroup>
+    </Table>
+    <Paragraph FontSize="20" FontWeight="Bold" Margin="12">
+      <Span><![CDATA[🡺 Qt property sheet]]></Span>
+    </Paragraph>
+    <Table CellSpacing="0" BorderBrush="Gray" BorderThickness="0.5">
+      <Table.Columns>
+        <TableColumn />
+        <TableColumn />
+      </Table.Columns>
+      <TableRowGroup>
+        <TableRow Background="Orange">
+          <TableCell ColumnSpan="2" BorderThickness="0.5" BorderBrush="Gray">
+            <Paragraph Margin="10,5" FontWeight="Bold">
+              <Span><![CDATA[D:\CPPRepos\Iray_git\IRay_Test\IRay_Test.vcxproj]]></Span>
+            </Paragraph>
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell ColumnSpan="2" Background="WhiteSmoke" BorderBrush="Gray" BorderThickness="0.5" />
+        </TableRow>
+        <TableRow>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0" />
+          </TableCell>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0">
+              <Span Background="LightGreen"><![CDATA[    <Import Project="$(QtMsBuild)\Qt.props" />]]></Span>
+            </Paragraph>
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell ColumnSpan="2" Background="WhiteSmoke" BorderBrush="Gray" BorderThickness="0.5" />
+        </TableRow>
+        <TableRow>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0" />
+          </TableCell>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0">
+              <Span Background="LightGreen"><![CDATA[    <Import Project="$(QtMsBuild)\Qt.props" />]]></Span>
+            </Paragraph>
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell ColumnSpan="2" Background="WhiteSmoke" BorderBrush="Gray" BorderThickness="0.5" />
+        </TableRow>
+        <TableRow>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0" />
+          </TableCell>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0">
+              <Span Background="LightGreen"><![CDATA[    <Import Project="$(QtMsBuild)\Qt.props" />]]></Span>
+            </Paragraph>
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell ColumnSpan="2" Background="WhiteSmoke" BorderBrush="Gray" BorderThickness="0.5" />
+        </TableRow>
+        <TableRow>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0" />
+          </TableCell>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0">
+              <Span Background="LightGreen"><![CDATA[    <Import Project="$(QtMsBuild)\Qt.props" />]]></Span>
+            </Paragraph>
+          </TableCell>
+        </TableRow>
+      </TableRowGroup>
+    </Table>
+    <Paragraph FontSize="20" FontWeight="Bold" Margin="12">
+      <Span><![CDATA[🡺 Qt targets]]></Span>
+    </Paragraph>
+    <Table CellSpacing="0" BorderBrush="Gray" BorderThickness="0.5">
+      <Table.Columns>
+        <TableColumn />
+        <TableColumn />
+      </Table.Columns>
+      <TableRowGroup>
+        <TableRow Background="Orange">
+          <TableCell ColumnSpan="2" BorderThickness="0.5" BorderBrush="Gray">
+            <Paragraph Margin="10,5" FontWeight="Bold">
+              <Span><![CDATA[D:\CPPRepos\Iray_git\IRay_Test\IRay_Test.vcxproj]]></Span>
+            </Paragraph>
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell ColumnSpan="2" Background="WhiteSmoke" BorderBrush="Gray" BorderThickness="0.5" />
+        </TableRow>
+        <TableRow>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0" />
+          </TableCell>
+          <TableCell BorderThickness="0, 0, 0.5, 0" BorderBrush="Gray">
+            <Paragraph FontFamily="Consolas" Margin="4, 0">
+              <Span Background="LightGreen"><![CDATA[  <Import Project="$(QtMsBuild)\qt.targets" Condition="Exists('$(QtMsBuild)\qt.targets')" />]]></Span>
+            </Paragraph>
+          </TableCell>
+        </TableRow>
+      </TableRowGroup>
+    </Table>
+  </Section>
+  <Section>
+    <Paragraph />
+  </Section>
+</FlowDocument>
+<!--3aEO9XouxP6KHTC6cwGSPfYnZYEI+oCc7IvxqgtPhA8=-->
