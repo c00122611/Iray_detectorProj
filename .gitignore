@@ -68,7 +68,6 @@
 # 4. VS2019编译输出目录（包含Qt生成的exe/dll）
 [Dd]ebug/
 [Rr]elease/
-x64/
 [Bb]in/
 [Oo]bj/
 # 5. VS2019临时文件
