@@ -22,3 +22,7 @@ A2026-01-04 18:57:13.894 497c Start to create detector object, work_dir = D:\CPP
 A2026-01-04 18:57:14.344 497c Create detector object succeed, detector ID = 1
 A2026-01-04 19:02:17.653 72c8 Start to create detector object, work_dir = D:\\CPPRepos\\IRay_Test\\work_dir\\NDT1717HS\
 A2026-01-04 19:02:18.042 72c8 Create detector object succeed, detector ID = 1
+A2026-01-07 21:37:26.110 17e0 Start to create detector object, work_dir = D:\\CPPRepos\\IRay_Test\\work_dir\\NDT1717HS\
+A2026-01-07 21:37:26.683 17e0 Create detector object succeed, detector ID = 1
+A2026-01-07 21:37:41.895 3b84 Start to create detector object, work_dir = D:\\CPPRepos\\IRay_Test\\work_dir\\NDT1717HS\
+A2026-01-07 21:37:42.211 3b84 Create detector object succeed, detector ID = 1
