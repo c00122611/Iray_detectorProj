@@ -48,44 +48,60 @@
 *.sdf
 *.idb
 *.pdb
-# VS2019用户配置（本地个性化，不同机器不一致）
+# ====================== VS2019 核心忽略规则 ======================
+# 1. VS2019缓存目录（包含ipch超大预编译文件，核心忽略项）
+.vs/
+# 2. VS2019预编译/索引文件（兜底，防止个别文件不在.vs目录）
+*.ipch
+*.sdf
+*.idb
+*.pdb
+*.VC.db
+*.VC.VC.opendb
+# 3. VS2019用户个性化配置（Qt路径/调试配置等，不同机器不一致）
 *.suo
 *.user
 *.userosscache
 *.sln.docstates
 *.vcxproj.user
 *.vcxproj.filters.user
-# VS2019编译输出（Debug/Release/x64，包含Qt生成的exe/dll）
+# 4. VS2019编译输出目录（包含Qt生成的exe/dll）
 [Dd]ebug/
 [Rr]elease/
 x64/
 [Bb]in/
 [Oo]bj/
-
-# ====================== VS2019+Qt 专属忽略（适配VS集成Qt插件） ======================
-# 1. Qt元对象编译器(MOC)生成的文件（VS编译Qt时自动生成）
-moc_*.cpp
-moc_*.h
-# 2. Qt UI编译器生成的头文件（VS中编译.ui文件生成）
-ui_*.h
-# 3. Qt资源编译器生成的文件
-qrc_*.cpp
-# 4. Qt在VS中的临时配置（VS Qt插件生成）
-*.pri.user
-*.qrc.user
-# 5. Qt编译中间文件（VS构建Qt项目时生成）
-*.rcc
-*.qm
-*.o
-# 6. Qt CMake配置（若用CMake+VS+Qt）
-CMakeLists.txt.user*
-cmake_build_*/
-.qmake.cache
-.qmake.stash
-
-# ====================== 通用冗余文件（避免系统/临时文件） ======================
-Thumbs.db
+# 5. VS2019临时文件
 *.tmp
 *.log
 *.bak
+
+# ====================== Qt5.14.2 专属忽略规则 ======================
+# 1. Qt元对象编译器(MOC)生成文件（VS编译Qt5.14.2自动生成）
+moc_*.cpp
+moc_*.h
+# 2. Qt UI编译器生成的头文件（.ui文件编译产物）
+ui_*.h
+# 3. Qt资源编译器生成文件（.qrc资源文件编译产物）
+qrc_*.cpp
+# 4. Qt5.14.2配置缓存（本地构建时生成）
+.qmake.cache
+.qmake.stash
+Makefile
+# 5. Qt5.14.2运行时/调试文件
+*.qm          # Qt翻译文件（可重新生成）
+*.rcc         # Qt资源编译文件
+*.o           # 编译中间目标文件
+*.dll         # Qt生成的动态库（本地编译生成）
+*.exe         # Qt生成的可执行文件
+# 6. Qt CMake构建目录（若用CMake+VS2019+Qt5.14.2）
+cmake_build_*/
+CMakeLists.txt.user*
+
+# ====================== 通用系统/冗余文件 ======================
+# Windows系统文件
+Thumbs.db
+# Mac系统文件
 .DS_Store
+# 临时文件兜底
+*~
