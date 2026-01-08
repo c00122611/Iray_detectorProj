@@ -40,30 +40,52 @@
 # debug information files
 *.dwo
 
-# qt 特定文件
-build-*/
-*.pro.user
-*.pro.user.*
-*.qbs.user
-*.qbs.user.*
-*.moc
-moc_*.cpp
-moc_*.h
-qrc_*.cpp
-ui_*.h
-*.qmlc
-*.jsc
-*.qm
-*.prl
-
-# Visual Studio 相关临时文件
+# ====================== VS2019 核心忽略（解决.vs大文件问题） ======================
+# 核心：忽略VS2019的.vs目录（包含ipch超大预编译文件）
 .vs/
+# VS2019预编译头/索引文件（兜底，防止个别文件不在.vs里）
 *.ipch
 *.sdf
+*.idb
+*.pdb
+# VS2019用户配置（本地个性化，不同机器不一致）
 *.suo
 *.user
 *.userosscache
 *.sln.docstates
-# 其他临时文件
+*.vcxproj.user
+*.vcxproj.filters.user
+# VS2019编译输出（Debug/Release/x64，包含Qt生成的exe/dll）
+[Dd]ebug/
+[Rr]elease/
+x64/
+[Bb]in/
+[Oo]bj/
+
+# ====================== VS2019+Qt 专属忽略（适配VS集成Qt插件） ======================
+# 1. Qt元对象编译器(MOC)生成的文件（VS编译Qt时自动生成）
+moc_*.cpp
+moc_*.h
+# 2. Qt UI编译器生成的头文件（VS中编译.ui文件生成）
+ui_*.h
+# 3. Qt资源编译器生成的文件
+qrc_*.cpp
+# 4. Qt在VS中的临时配置（VS Qt插件生成）
+*.pri.user
+*.qrc.user
+# 5. Qt编译中间文件（VS构建Qt项目时生成）
+*.rcc
+*.qm
+*.o
+# 6. Qt CMake配置（若用CMake+VS+Qt）
+CMakeLists.txt.user*
+cmake_build_*/
+.qmake.cache
+.qmake.stash
+
+# ====================== 通用冗余文件（避免系统/临时文件） ======================
+Thumbs.db
 *.tmp
 *.log
+*.bak
+.DS_Store
