@@ -6,6 +6,7 @@
 #include<qpushbutton.h>
 #include <QThread>
 #include<QTextedit>
+#include<opencv2/opencv.hpp>
 
 class IrayWidget : public QMainWindow
 {
@@ -17,7 +18,7 @@ public:
 private slots:
 	void onLogMessage(const QString& msg);
 	//TODO Í¼ÏñÏà¹Ø
-	//void onImageReceived(const cv::Mat& img);
+	void onImageReceived(const cv::Mat& img);
 	void onConnectionChanged(bool connected);
 private:
 	Ui::IrayWidgetClass ui;

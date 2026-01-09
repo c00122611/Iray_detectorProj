@@ -31,9 +31,6 @@
     <Filter Include="DetectorUSe">
       <UniqueIdentifier>{bdedd242-2465-4251-b7b4-451218527d14}</UniqueIdentifier>
     </Filter>
-    <Filter Include="DetectorUSe\Calibration">
-      <UniqueIdentifier>{6bb8281d-b1e6-49cb-8197-5e2828281e4a}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Detector.cpp">

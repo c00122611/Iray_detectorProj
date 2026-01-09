@@ -18,8 +18,8 @@ IrayWidget::IrayWidget(QWidget *parent)
 
     // 接收日志、图像等
     connect(m_manager, &DetectorUseManager::logMessage, this, &IrayWidget::onLogMessage);
-    //TODO图像相关
-    //connect(m_manager, &DetectorUseManager::imageReceived, this, &IrayWidget::onImageReceived);
+    //图像相关
+    connect(m_manager, &DetectorUseManager::imageReceived, this, &IrayWidget::onImageReceived);
     connect(m_manager, &DetectorUseManager::connectionChanged, this, [this](bool connected) {
         ui.ConnectButton->setEnabled(!connected);
         ui.offsetCalButton->setEnabled(connected);

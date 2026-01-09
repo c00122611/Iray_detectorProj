@@ -14,6 +14,7 @@ public slots:
     void startOffsetCalibration();
     void startGainCalibration();
     void startSingleAcquisition();
+    void imageReceived();
 
 signals:
     void logMessage(const QString& msg);
