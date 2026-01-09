@@ -5,6 +5,7 @@
 #include "DetectorUseManager.h"
 #include<qpushbutton.h>
 #include <QThread>
+#include<QTextedit>
 
 class IrayWidget : public QMainWindow
 {
@@ -15,7 +16,8 @@ public:
 	~IrayWidget();
 private slots:
 	void onLogMessage(const QString& msg);
-	void onImageReceived(const cv::Mat& img);
+	//TODO Í¼ÏñÏà¹Ø
+	//void onImageReceived(const cv::Mat& img);
 	void onConnectionChanged(bool connected);
 private:
 	Ui::IrayWidgetClass ui;

@@ -1,27 +1,31 @@
-#pragma once
+ï»¿#pragma once
 #include "stdafx.h"
 #include "Detector.h"
-#include <calibration.h>
 #include <Windows.h>
+#include <functional> 
+#include <string>     
 
 class DetectorUse {
 private:
     CDetector* m_pDetInstance;
 
-    // Ğ£×¼ĞèÒªµÄÖ¡ÊıÍ³¼Æ
+    // æ ¡å‡†éœ€è¦çš„å¸§æ•°ç»Ÿè®¡
     int m_TotalDarkFrames;
     int m_TotalLightFrames;
 
-    // ´íÎó±êÖ¾
+    // é”™è¯¯æ ‡å¿—
     bool m_bError;
 
-    // ¾²Ì¬³ÉÔ±±äÁ¿
+    // é™æ€æˆå‘˜å˜é‡
     static DetectorUse* s_Instance;
 
-    // === ÄÚ²¿¸¨Öúº¯Êı ===
-    int Initialize();      // ½ö¹© Connect µ÷ÓÃ
-    void Deinit();         // ½ö¹© Disconnect µ÷ÓÃ
-    int InitCalibration(); // ¹©¸÷Ğ£×¼²½Öèµ÷ÓÃ
+    // === æ—¥å¿—å›è°ƒ ===
+    std::function<void(const std::string&)> m_logCallback; // ğŸ‘ˆ æ–°å¢
+
+    // === å†…éƒ¨è¾…åŠ©å‡½æ•° ===
+    int Initialize();      // ä»…ä¾› Connect è°ƒç”¨
+    void Deinit();         // ä»…ä¾› Disconnect è°ƒç”¨
+    int InitCalibration(); // ä¾›å„æ ¡å‡†æ­¥éª¤è°ƒç”¨
     int AcquireDarkImages();
     int AcquireLightImages();
     int GenerateOffsetTemplate();
@@ -31,7 +35,11 @@ private:
     int AbortCalibration();
     int GetValidDarkFrames();
     int GetValidLightFrames();
-    // ¾²Ì¬»Øµ÷
+
+    // å†…éƒ¨æ—¥å¿—å‡½æ•°
+    void logMessage(const char* format, ...); 
+
+    // é™æ€å›è°ƒ
     static void SDKCallbackHandler(int nDetectorID, int nEventID, int nEventLevel,
         const char* pszMsg, int nParam1, int nParam2, int nPtrParamLen, void* pParam);
 
@@ -39,18 +47,20 @@ public:
     DetectorUse();
     ~DetectorUse();
 
-    // === Á¬½Ó¹ÜÀí ===
-    // ·µ»Ø Err_OK ±íÊ¾³É¹¦£¬ÆäËûÖµÇë²Î¿¼ GetErrorInfo
+    // è®¾ç½®æ—¥å¿—å›è°ƒï¼ˆä¾› Qt å±‚è¿æ¥ï¼‰
+    void setLogCallback(std::function<void(const std::string&)> callback) {
+        m_logCallback = callback;
+    }
+
+    // === è¿æ¥ç®¡ç† ===
     int Connect();
     void Disconnect();
 
-    // === Ğ£×¼Á÷³Ì ===
-    // Æ«ÒÆĞ£Õı (ĞèÏÈ Connect)
+    // === æ ¡å‡†æµç¨‹ ===
     void runOffsetCalibration();
-
-    // ÔöÒæĞ£Õı (ĞèÏÈ Connect)
     void runGainCalibration();
 
-    // === µ¥´Î²É¼¯ ===
+    // === é‡‡é›† ===
     void runSingleAcquisition();
+    void runSeqAcquisition();
 };

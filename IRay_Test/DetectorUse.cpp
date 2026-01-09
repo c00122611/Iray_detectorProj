@@ -1,6 +1,8 @@
-#include "DetectorUse.h"
+ï»¿#include "DetectorUse.h"
+#include <cstdarg>   // 
+#include <cstdio>    // 
 
-// ¾²Ì¬³ÉÔ±±äÁ¿¶¨Òå£¬±£Ö¤È«¾Öµ¥Àý£¬Î¨Ò»s_Instance
+// é™æ€æˆå‘˜å˜é‡å®šä¹‰
 DetectorUse* DetectorUse::s_Instance = nullptr;
 
 DetectorUse::DetectorUse() {
@@ -11,31 +13,49 @@ DetectorUse::DetectorUse() {
 }
 
 DetectorUse::~DetectorUse() {
-    // Îö¹¹Ê±×Ô¶¯¶Ï¿ª£¬·ÀÖ¹Íü¼Çµ÷ÓÃ Disconnect
     Disconnect();
 }
 
-// SDK»Øµ÷º¯Êý
+// === æ–°å¢žï¼šå†…éƒ¨æ—¥å¿—å‡½æ•° ===
+void DetectorUse::logMessage(const char* format, ...) {
+    char buffer[1024];
+    va_list args;
+    va_start(args, format);
+    vsnprintf(buffer, sizeof(buffer), format, args);
+    va_end(args);
+
+    if (m_logCallback) {
+        m_logCallback(buffer);
+    }
+    else {
+        // å›žé€€åˆ°æŽ§åˆ¶å°ï¼ˆä¿ç•™åŽŸæœ‰ TRACE è¡Œä¸ºï¼‰
+        printf("%s", buffer);
+    }
+}
+
+// SDKå›žè°ƒå‡½æ•°
 void DetectorUse::SDKCallbackHandler(int nDetectorID, int nEventID, int nEventLevel,
     const char* pszMsg, int nParam1, int nParam2, int nPtrParamLen, void* pParam) {
 
     if (s_Instance != nullptr) {
-        // ×ª·¢»Øµ÷¸øµ×²ãSDKÊµÀý
         s_Instance->m_pDetInstance->SDKCallback(nDetectorID, nEventID, nEventLevel, pszMsg, nParam1, nParam2, nPtrParamLen, pParam);
 
         switch (nEventID) {
         case Evt_ConnectProcess:
-            // TRACE("%s\n", pszMsg);
+            // é€šè¿‡æ—¥å¿—å›žè°ƒè¾“å‡º
+            if (pszMsg && s_Instance->m_logCallback) {
+                s_Instance->m_logCallback(pszMsg);
+            }
             break;
         case Evt_TaskResult_Failed:
-            // ÉèÖÃ´íÎó±êÖ¾£¬ÒÔ±ãÖ÷Ñ­»·ÍË³ö
             if (nParam1 == Cmd_ForceDarkContinuousAcq) {
-                TRACE("Acquisition Error: %s\n", s_Instance->m_pDetInstance->GetErrorInfo(nParam2).c_str());
+                std::string errMsg = "Acquisition Error: " + s_Instance->m_pDetInstance->GetErrorInfo(nParam2);
+                s_Instance->m_logCallback(errMsg);
                 s_Instance->m_bError = true;
             }
             break;
         case Evt_Image:
-            // TODO Í¼Ïñ´¦Àí¡¢´æ´¢µÈÂß¼­
+            // TODO: å¯åœ¨æ­¤å¤„ emit å›¾åƒ
             break;
         default:
             break;
@@ -46,23 +66,38 @@ void DetectorUse::SDKCallbackHandler(int nDetectorID, int nEventID, int nEventLe
 int DetectorUse::Initialize() {
     m_pDetInstance = new CDetector();
 
-    TRACE("Loading Library...");
+    logMessage("Loading Library...");
     int ret = m_pDetInstance->LoadIRayLibrary();
-    if (Err_OK != ret) return ret;
-    TRACE("[OK]\n");
+    if (Err_OK != ret) {
+        logMessage("FAILED\n");
+        return ret;
+    }
+    logMessage("[OK]\n");
 
-    TRACE("Creating Instance...");
+    logMessage("Creating Instance...");
     ret = m_pDetInstance->Create(GetWorkDirPath().c_str(), SDKCallbackHandler);
-    if (Err_OK != ret) return ret;
-    TRACE("[OK]\n");
+    if (Err_OK != ret) {
+        logMessage("FAILED\n");
+        return ret;
+    }
+    logMessage("[OK]\n");
 
-    TRACE("Connecting Device...");
+    logMessage("Connecting Device...");
     ret = m_pDetInstance->SyncInvoke(Cmd_Connect, 30000);
-    if (Err_OK != ret) return ret;
-    TRACE("[OK]\n");
+    if (Err_OK != ret) {
+        logMessage("FAILED\n");
+        return ret;
+    }
+    logMessage("[OK]\n");
 
-    TRACE("Setting Application Mode...");
+    logMessage("Setting Application Mode...");
     ret = m_pDetInstance->SyncInvoke(Cmd_SetCaliSubset, "Mode1", 5000);
+    if (Err_OK != ret) {
+        logMessage("FAILED\n");
+    }
+    else {
+        logMessage("[OK]\n");
+    }
     return ret;
 }
 
@@ -89,23 +124,22 @@ int DetectorUse::AcquireDarkImages() {
     m_pDetInstance->Invoke(Cmd_ForceDarkContinuousAcq, 0);
 
     int nValid = 0;
-    // ÂÖÑ¯Ö±µ½²É¼¯Íê³É»ò³ö´í
     while (nValid < m_TotalDarkFrames && !m_bError) {
         nValid = GetValidDarkFrames();
-        Sleep(100); // ±ÜÃâ CPU Õ¼ÓÃ¹ý¸ß
+        Sleep(100);
     }
 
     return m_bError ? Err_Unknown : Err_OK;
 }
+
 int DetectorUse::AcquireLightImages() {
     m_bError = false;
     m_pDetInstance->Invoke(Cmd_StartAcq);
 
     int nValid = 0;
-    // ÂÖÑ¯Ö±µ½²É¼¯Íê³É»ò³ö´í
     while (nValid < m_TotalLightFrames && !m_bError) {
         nValid = GetValidLightFrames();
-        Sleep(100); // ±ÜÃâ CPU Õ¼ÓÃ¹ý¸ß
+        Sleep(100);
     }
 
     return m_bError ? Err_Unknown : Err_OK;
@@ -139,121 +173,130 @@ int DetectorUse::GetValidLightFrames() {
     return m_pDetInstance->GetAttrInt(Attr_GainValidFrames);
 }
 
-// Á¬½Ó 
 int DetectorUse::Connect() {
     if (m_pDetInstance != nullptr) {
-        TRACE("Already connected.\n");
-        return Err_OK; // »òÕß·µ»Ø´íÎó£¬ÊÓÐèÇó¶ø¶¨
+        logMessage("Already connected.\n");
+        return Err_OK;
     }
 
-    TRACE("Initializing Detector...\n");
+    logMessage("å¼€å§‹åˆå§‹åŒ– Initializing Detector...\n");
     int ret = Initialize();
 
     if (Err_OK == ret) {
-        s_Instance = this; // Á¬½Ó³É¹¦ºó°ó¶¨¾²Ì¬Ö¸Õë
-        TRACE("Detector Connected Successfully.\n");
+        s_Instance = this;
+        logMessage("Detector Connected Successfully.\n");
     }
     else {
-        TRACE("Connection Failed.\n");
+        logMessage("Connection Failed.\n");
     }
 
     return ret;
 }
 
-// ¶Ï¿ª 
 void DetectorUse::Disconnect() {
     if (m_pDetInstance != nullptr) {
-        s_Instance = nullptr; // ¶Ï¿ªÇ°Çå³ý¾²Ì¬Ö¸Õë
+        s_Instance = nullptr;
         Deinit();
-        TRACE("Detector Disconnected.\n");
+        logMessage("Detector Disconnected.\n");
     }
 }
 
-// Æ«ÒÆÐ£Õý
 void DetectorUse::runOffsetCalibration() {
-    // °²È«¼ì²é£º±ØÐëÏÈÁ¬½Ó
     if (m_pDetInstance == nullptr) {
-        TRACE("Error: Detector not connected. Please call Connect() first.\n");
+        logMessage("Error: Detector not connected. Please call Connect() first.\n");
         return;
     }
 
+    bool bSuccess = false;
     do {
         m_pDetInstance->SetAttr(Cfg_CalibrationFlow, 1);
 
         if (Err_OK != InitCalibration()) {
-            TRACE("InitCalibration failed.\n");
+            logMessage("InitCalibration failed.\n");
             break;
         }
 
-        TRACE("Starting Dark Field Acquisition...\n");
+        logMessage("Starting Dark Field Acquisition...\n");
         if (Err_OK != AcquireDarkImages()) {
-            TRACE("Dark Field Acquisition failed.\n");
+            logMessage("Dark Field Acquisition failed.\n");
             break;
         }
 
-        TRACE("Generating Offset Map...\n");
+        logMessage("Generating Offset Map...\n");
         if (Err_OK != GenerateOffsetTemplate()) {
-            TRACE("Generate Offset failed.\n");
+            logMessage("Generate Offset failed.\n");
             break;
         }
 
-        TRACE("Offset Calibration Completed Successfully.\n");
-
-    } while (false);
-
-    FinishCalibration(); // Ã¿´ÎÐ£×¼½áÊø¶¼Í¨ÖªSDKÍê³ÉÁ÷³Ì
-}
-
-// === ÄÚ²¿ÊµÏÖ£ºÔöÒæÐ£Õý ===
-void DetectorUse::runGainCalibration() {
-    if (m_pDetInstance == nullptr) {
-        TRACE("Error: Detector not connected. Please call Connect() first.\n");
-        return;
-    }
-
-    do {
-        m_pDetInstance->SetAttr(Cfg_CalibrationFlow, 1);
-
-        if (Err_OK != InitCalibration()) {
-            TRACE("InitCalibration failed.\n");
-            break;
-        }
-
-        TRACE("Starting Light Field Acquisition...\n");
-        if (Err_OK != AcquireLightImages()) {
-            TRACE("Light Field Acquisition failed.\n");
-            break;
-        }
-
-        TRACE("Generating Gain Map...\n");
-        if (Err_OK != GenerateGainTemplate()) {
-            TRACE("Generate Gain failed.\n");
-            break;
-        }
-
-        TRACE("Generating Defect Map...\n");
-        if (Err_OK != GenerateDefectTemplate()) {
-            TRACE("Generate Defect failed.\n");
-            break;
-        }
-
-        TRACE("Gain Calibration Completed Successfully.\n");
+        bSuccess = true;
 
     } while (false);
 
     FinishCalibration();
+
+    if (bSuccess) {
+        logMessage("Offset Calibration Completed Successfully.\n");
+    }
+    else {
+        logMessage("Offset Calibration FAILED.\n");
+    }
 }
 
-// === ÄÚ²¿ÊµÏÖ£ºµ¥´Î²É¼¯ ===
-void DetectorUse::runSingleAcquisition() {
+void DetectorUse::runGainCalibration() {
     if (m_pDetInstance == nullptr) {
-        TRACE("Error: Detector not connected. Please call Connect() first.\n");
+        logMessage("Error: Detector not connected. Please call Connect() first.\n");
         return;
     }
 
-    TRACE("Starting Single Acquisition...\n");
+    bool bSuccess = false;
+    do {
+        m_pDetInstance->SetAttr(Cfg_CalibrationFlow, 1);
 
-    // ÉèÖÃÍ¬²½Êä³öÄ£Ê½
+        if (Err_OK != InitCalibration()) {
+            logMessage("InitCalibration failed.\n");
+            break;
+        }
+
+        logMessage("Starting Light Field Acquisition...\n");
+        if (Err_OK != AcquireLightImages()) {
+            logMessage("Light Field Acquisition failed.\n");
+            break;
+        }
+
+        logMessage("Generating Gain Map...\n");
+        if (Err_OK != GenerateGainTemplate()) {
+            logMessage("Generate Gain failed.\n");
+            break;
+        }
+
+        logMessage("Generating Defect Map...\n");
+        if (Err_OK != GenerateDefectTemplate()) {
+            logMessage("Generate Defect failed.\n");
+            break;
+        }
+
+        bSuccess = true;
+
+    } while (false);
+
+    FinishCalibration();
+
+    if (bSuccess) {
+        logMessage("Gain Calibration Completed Successfully.\n");
+    }
+    else {
+        logMessage("Gain Calibration FAILED.\n");
+    }
+}
+
+void DetectorUse::runSingleAcquisition() {
+    if (m_pDetInstance == nullptr) {
+        logMessage("Error: Detector not connected. Please call Connect() first.\n");
+        return;
+    }
+
+    logMessage("Starting Single Acquisition...\n");
+
     m_pDetInstance->SetAttr(Attr_UROM_FluroSync_W, Enm_FluroSync_SyncOut);
     m_pDetInstance->SyncInvoke(Cmd_WriteUserRAM, 4000);
 
@@ -261,12 +304,16 @@ void DetectorUse::runSingleAcquisition() {
     int nTimeOut = nExposeWindowTime + 2000;
 
     m_pDetInstance->SetAttr(Cfg_ClearAcqParam_DelayTime, nExposeWindowTime);
-    m_pDetInstance->SyncInvoke(Cmd_ClearAcq, nTimeOut);
+    int ret = m_pDetInstance->SyncInvoke(Cmd_ClearAcq, nTimeOut);
 
-    TRACE("Single Acquisition Finished.\n");
+    if (ret == Err_OK || ret == Err_TaskPending) {
+        logMessage("Single Acquisition command sent.\n");
+    }
+    else {
+        logMessage("Single Acquisition failed: %s\n", m_pDetInstance->GetErrorInfo(ret).c_str());
+    }
 }
 
-// ¶à´Î²É¼¯
-void runSeqAcquisition() {
-
+void DetectorUse::runSeqAcquisition() {
+    logMessage("Sequential acquisition not implemented yet.\n");
 }
