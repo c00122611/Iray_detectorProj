@@ -13,7 +13,9 @@ static int gs_StartFrames;
 static IRayTimer gs_timer;
 static HEVENT gs_hNextStep = NULL;
 static HEVENT gs_hErrorEvent = NULL;
-static HEVENT gs_hEvents[2];
+static HEVENT gs_hEvents[2]; static int s_nExpWindow = 0;
+static IRayTimer s_timer;
+
 
 int Initializte();
 void Deinit();

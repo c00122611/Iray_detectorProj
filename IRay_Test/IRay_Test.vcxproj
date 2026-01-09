@@ -168,6 +168,7 @@
   <ItemGroup>
     <ClCompile Include="calibrationTest.cpp" />
     <ClCompile Include="Detector.cpp" />
+    <ClCompile Include="DetectorUse.cpp" />
     <ClCompile Include="IrayWidget.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="winevent.cpp" />
@@ -175,6 +176,7 @@
   <ItemGroup>
     <ClInclude Include="calibration.h" />
     <ClInclude Include="Detector.h" />
+    <ClInclude Include="DetectorUse.h" />
     <ClInclude Include="DisplayProgressbar.h" />
     <ClInclude Include="IrayInclude.h" />
     <QtMoc Include="IrayWidget.h" />

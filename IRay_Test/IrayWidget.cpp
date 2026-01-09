@@ -4,11 +4,13 @@ IrayWidget::IrayWidget(QWidget *parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
+	
 	connect(ui.TestButton, &QPushButton::clicked, [=]() {
-		connectAndCalibration();
+		this->m_detectorUse.runAutoCalibration();
 		});
 }
 
 IrayWidget::~IrayWidget()
 {}
+
 

@@ -31,6 +31,9 @@
     <Filter Include="QT\UI">
       <UniqueIdentifier>{04e5331d-408b-4400-b7f3-d5c5335d505f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="DetectorUSe">
+      <UniqueIdentifier>{bdedd242-2465-4251-b7b4-451218527d14}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Detector.cpp">
@@ -47,6 +50,9 @@
     </ClCompile>
     <ClCompile Include="calibrationTest.cpp">
       <Filter>QT\源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="DetectorUse.cpp">
+      <Filter>DetectorUSe</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -73,6 +79,9 @@
     </ClInclude>
     <ClInclude Include="calibration.h">
       <Filter>QT\头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="DetectorUse.h">
+      <Filter>DetectorUSe</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

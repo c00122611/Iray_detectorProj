@@ -1,6 +1,15 @@
 // Dynamic_GenerateAllTemplates.cpp : Defines the entry point for the console application.
 #include<calibration.h>
-
+void TimeProc(int uTimerID)
+{
+	s_nExpWindow -= 1;
+	if (0 == s_nExpWindow)
+	{
+		s_timer.Close();
+		return;
+	}
+	TRACE("Please expose in %ds\r", s_nExpWindow);
+}
 void AcquiringDarkTimer(int uTimerID)
 {
 	int nValid = GetValidDarkFrames();
@@ -12,7 +21,6 @@ void AcquiringDarkTimer(int uTimerID)
 		SetEvent(gs_hNextStep);
 	}
 }
-
 void AcquiringLightTimer(int uTimerID)
 {
 	int nValid = GetValidLightFrames();
@@ -24,7 +32,6 @@ void AcquiringLightTimer(int uTimerID)
 		SetEvent(gs_hNextStep);
 	}
 }
-
 void SDKCallbackHandler(int nDetectorID, int nEventID, int nEventLevel,
 	const char* pszMsg, int nParam1, int nParam2, int nPtrParamLen, void* pParam)
 {
@@ -33,8 +40,8 @@ void SDKCallbackHandler(int nDetectorID, int nEventID, int nEventLevel,
 	{
 		//连接信息
 	case Evt_ConnectProcess:
-		//TRACE(pszMsg);
-		//TRACE("\n");
+		TRACE(pszMsg);
+		TRACE("\n");
 		break;
 		//事件失败信息
 	case Evt_TaskResult_Failed:
@@ -44,9 +51,29 @@ void SDKCallbackHandler(int nDetectorID, int nEventID, int nEventLevel,
 			SetEvent(gs_hErrorEvent);
 		}
 		break;
-	}
-}
 
+	case Evt_Exp_Enable:
+		TRACE("Prepare to expose\n");
+		s_timer.Init(TimeProc, 1000);
+		s_nExpWindow = nParam1 / 1000;
+		TRACE("Please expose in %ds\r", s_nExpWindow);
+		break;
+		//获取图像的回调信息
+	case Evt_Image:
+		TRACE("\nGot image\n");
+		{
+			//must make deep copies of pParam
+			IRayImage* pImg = (IRayImage*)pParam;
+			unsigned short* pImageData = pImg->pData;
+			int nImageSize = pImg->nWidth * pImg->nHeight * pImg->nBytesPerPixel;
+			int nFrameNo = gs_pDetInstance->GetImagePropertyInt(&pImg->propList, Enm_ImageTag_FrameNo);
+		}
+		break;
+	default:
+		break;
+	}
+
+}
 char DoSelection(Enm_FileTypes type)
 {
 	if (type != Enm_File_Gain && type != Enm_File_Defect)
@@ -113,7 +140,6 @@ void connectAndCalibration() {
 	getchar();
 	Deinit();
 }
-
 int Initializte()
 {
 	gs_pDetInstance = new CDetector();
@@ -155,7 +181,6 @@ int Initializte()
 		TRACE("\t\t[Yes]\n");
 	return ret;
 }
-
 void Deinit()
 {
 	if (gs_hEvents[0])
@@ -176,7 +201,6 @@ void Deinit()
 		gs_pDetInstance = NULL;
 	}
 }
-
 int InitCalibration()
 {
 	int ret = gs_pDetInstance->SyncInvoke(Cmd_CalibrationInit, 5000);
@@ -187,7 +211,6 @@ int InitCalibration()
 	}
 	return ret;
 }
-
 int AcquireDarkImages()
 {
 	gs_pDetInstance->Invoke(Cmd_ForceDarkContinuousAcq, 0);
@@ -200,7 +223,6 @@ int AcquireDarkImages()
 	}
 	return Err_OK;
 }
-
 int AcquireLightImages()
 {
 	gs_pDetInstance->Invoke(Cmd_StartAcq);
@@ -213,40 +235,33 @@ int AcquireLightImages()
 	}
 	return Err_OK;
 }
-
 //Acquire dark images firstly
 int GenerateOffsetTemplate()
 {
 	return gs_pDetInstance->Invoke(Cmd_OffsetGeneration);
 }
-
 //Acquire dark and light images firstly
 int GenerateGainTemplate()
 {
 	return gs_pDetInstance->Invoke(Cmd_GainGeneration);
 }
-
 //Acquire dark and light images firstly
 int GenerateDefectTemplate()
 {
 	return gs_pDetInstance->Invoke(Cmd_DefectGeneration);
 }
-
 int AbortCalibration()
 {
 	return  gs_pDetInstance->Abort();
 }
-
 void FinishCalibration()
 {
 	gs_pDetInstance->SyncInvoke(Cmd_FinishGenerationProcess, 3000);
 }
-
 int GetValidDarkFrames()
 {
 	return gs_pDetInstance->GetAttrInt(Attr_OffsetValidFrames);
 }
-
 int GetValidLightFrames()
 {
 	return gs_pDetInstance->GetAttrInt(Attr_GainValidFrames);

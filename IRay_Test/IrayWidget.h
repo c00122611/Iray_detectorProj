@@ -2,7 +2,7 @@
 
 #include <QMainWindow>
 #include "ui_IrayWidget.h"
-#include"calibration.h"
+#include"DetectorUse.h"
 #include<qpushbutton.h>
 
 class IrayWidget : public QMainWindow
@@ -15,5 +15,6 @@ public:
 
 private:
 	Ui::IrayWidgetClass ui;
+    DetectorUse m_detectorUse;
 };
 
