@@ -12,27 +12,26 @@ private:
     int m_TotalDarkFrames;
     int m_TotalLightFrames;
 
-    // 错误标志，用于异步操作中断
+    // 错误标志
     bool m_bError;
 
-    // 静态成员变量用于回调函数访问
+    // 静态成员变量
     static DetectorUse* s_Instance;
 
-    // 私有辅助函数
-    int Initialize();
-    void Deinit();
-    int InitCalibration();
+    // === 内部辅助函数 ===
+    int Initialize();      // 仅供 Connect 调用
+    void Deinit();         // 仅供 Disconnect 调用
+    int InitCalibration(); // 供各校准步骤调用
     int AcquireDarkImages();
     int AcquireLightImages();
     int GenerateOffsetTemplate();
     int GenerateGainTemplate();
     int GenerateDefectTemplate();
-    int AbortCalibration();
     void FinishCalibration();
+    int AbortCalibration();
     int GetValidDarkFrames();
     int GetValidLightFrames();
-
-    // 静态回调函数 (精简版)
+    // 静态回调
     static void SDKCallbackHandler(int nDetectorID, int nEventID, int nEventLevel,
         const char* pszMsg, int nParam1, int nParam2, int nPtrParamLen, void* pParam);
 
@@ -40,9 +39,18 @@ public:
     DetectorUse();
     ~DetectorUse();
 
-    // 公共接口函数
-    // 自动执行完整的连接和校准流程
-    void runAutoCalibration();
-    // 执行单次采集
+    // === 连接管理 ===
+    // 返回 Err_OK 表示成功，其他值请参考 GetErrorInfo
+    int Connect();
+    void Disconnect();
+
+    // === 校准流程 ===
+    // 偏移校正 (需先 Connect)
+    void runOffsetCalibration();
+
+    // 增益校正 (需先 Connect)
+    void runGainCalibration();
+
+    // === 单次采集 ===
     void runSingleAcquisition();
 };

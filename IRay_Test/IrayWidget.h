@@ -2,8 +2,9 @@
 
 #include <QMainWindow>
 #include "ui_IrayWidget.h"
-#include"DetectorUse.h"
+#include "DetectorUseManager.h"
 #include<qpushbutton.h>
+#include <QThread>
 
 class IrayWidget : public QMainWindow
 {
@@ -12,9 +13,13 @@ class IrayWidget : public QMainWindow
 public:
 	IrayWidget(QWidget *parent = nullptr);
 	~IrayWidget();
-
+private slots:
+	void onLogMessage(const QString& msg);
+	void onImageReceived(const cv::Mat& img);
+	void onConnectionChanged(bool connected);
 private:
 	Ui::IrayWidgetClass ui;
-    DetectorUse m_detectorUse;
+	DetectorUseManager* m_manager;
+	QThread* m_workerThread;
 };
 

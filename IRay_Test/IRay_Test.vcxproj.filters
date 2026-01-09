@@ -54,6 +54,9 @@
     <ClCompile Include="DetectorUse.cpp">
       <Filter>DetectorUSe</Filter>
     </ClCompile>
+    <ClCompile Include="DetectorUseManager.cpp">
+      <Filter>DetectorUSe</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="IrayInclude.h">
@@ -87,6 +90,9 @@
   <ItemGroup>
     <QtMoc Include="IrayWidget.h">
       <Filter>QT\头文件</Filter>
+    </QtMoc>
+    <QtMoc Include="DetectorUseManager.h">
+      <Filter>DetectorUSe</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>

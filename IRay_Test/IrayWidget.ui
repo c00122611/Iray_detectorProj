@@ -14,18 +14,38 @@
    <string>IrayWidget</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QPushButton" name="TestButton">
+   <widget class="QWidget" name="widget" native="true">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>50</y>
-      <width>131</width>
-      <height>31</height>
+      <x>0</x>
+      <y>20</y>
+      <width>215</width>
+      <height>85</height>
      </rect>
     </property>
-    <property name="text">
-     <string>PushButton</string>
-    </property>
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0" colspan="2">
+      <widget class="QPushButton" name="ConnectButton">
+       <property name="text">
+        <string>connect</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QPushButton" name="offsetCalButton">
+       <property name="text">
+        <string>偏移校正</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QPushButton" name="gaincalButton">
+       <property name="text">
+        <string>gain校正</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
