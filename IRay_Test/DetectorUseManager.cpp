@@ -71,3 +71,27 @@ void DetectorUseManager::onSelectModeClicked() {
         }
     }
 }
+
+// DetectorUseManager.cpp
+void DetectorUseManager::startFluoroDisplay() {
+    if (!m_fluoroTimer) {
+        m_fluoroTimer = new QTimer(this);
+        connect(m_fluoroTimer, &QTimer::timeout, this, &DetectorUseManager::onFluoroTimerTimeout);
+    }
+    // 3Ö¡Ö¡ÂÊ ÏÔÊ¾ 
+    m_fluoroTimer->start(500);
+}
+
+void DetectorUseManager::stopFluoroDisplay() {
+    if (m_fluoroTimer) {
+        m_fluoroTimer->stop();
+    }
+}
+
+void DetectorUseManager::onFluoroTimerTimeout() {
+    cv::Mat frame = m_detectorUse.getCurrentFrame();
+    if (!frame.empty()) {
+        QImage img = MatToQImage(frame);
+        emit newFrameReceived(img);
+    }
+}

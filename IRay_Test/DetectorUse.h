@@ -6,6 +6,7 @@
 #include <string>
 #include <QVector>
 #include "iniParser.h"
+#include "opencv2/opencv.hpp"
 
 // 应用模式信息（modeinfo）在 workdir文件下的配置文件中可以看到
 struct ApplicationModeInfo {
@@ -76,4 +77,9 @@ public:
     // === 采集 ===
     void runSingleAcquisition();
     void runSeqAcquisition();
+
+    int initImageBuffer();
+    int startContinuousAcquisition();
+    int stopContinuousAcquisition();
+    cv::Mat getCurrentFrame();
 };

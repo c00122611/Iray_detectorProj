@@ -172,6 +172,7 @@
     <ClCompile Include="Detector.cpp" />
     <ClCompile Include="DetectorUse.cpp" />
     <ClCompile Include="DetectorUseManager.cpp" />
+    <ClCompile Include="ImageUtil.cpp" />
     <ClCompile Include="iniParser.cpp" />
     <ClCompile Include="IrayWidget.cpp" />
     <ClCompile Include="main.cpp" />
@@ -183,6 +184,7 @@
     <ClInclude Include="DetectorUse.h" />
     <QtMoc Include="DetectorUseManager.h" />
     <ClInclude Include="DisplayProgressbar.h" />
+    <ClInclude Include="ImageUtil.h" />
     <ClInclude Include="iniParser.h" />
     <ClInclude Include="IrayInclude.h" />
     <QtMoc Include="IrayWidget.h" />

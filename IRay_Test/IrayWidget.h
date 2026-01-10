@@ -19,6 +19,7 @@ private slots:
 	void onLogMessage(const QString& msg);
 	void onConnectionChanged(bool connected);
 	void onApplicationModeChanged(const QString& mode, bool success);
+	void onNewFrameReceived(const QImage& image);
 private:
 	Ui::IrayWidgetClass ui;
 	DetectorUseManager* m_manager;

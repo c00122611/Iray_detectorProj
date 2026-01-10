@@ -392,7 +392,59 @@ void DetectorUse::runSingleAcquisition() {
         logMessage("Single Acquisition failed: %s\n", m_pDetInstance->GetErrorInfo(ret).c_str());
     }
 }
-
 void DetectorUse::runSeqAcquisition() {
     logMessage("Sequential acquisition not implemented yet.\n");
+}
+
+// DetectorUse.cpp
+int DetectorUse::initImageBuffer() {
+    // 获取单帧大小
+    int width = m_pDetInstance->GetAttrInt(Attr_Width);
+    int height = m_pDetInstance->GetAttrInt(Attr_Height);
+    //int bpp = m_pDetInstance->GetAttrInt(); // 通常为 2（16-bit）
+    //16位图像，两字节 TODO
+    size_t frameSize = width * height * 2;
+
+    // 预分配 10 帧缓存
+    return m_pDetInstance->UseImageBuf(static_cast<unsigned long long>(frameSize * 10));
+}
+int DetectorUse::startContinuousAcquisition() {
+    if (!m_pDetInstance) return Err_NotInitialized;
+
+    // 确保校正已启用
+    int correctOpt = Enm_CorrectOp_SW_PreOffset |
+        Enm_CorrectOp_SW_Gain |
+        Enm_CorrectOp_SW_Defect;
+    m_pDetInstance->SetAttr(Attr_CurrentCorrectOption, correctOpt);
+
+    // 启动连续采集
+    int ret = m_pDetInstance->Invoke(Cmd_StartAcq);
+    if (ret != Err_OK && ret != Err_TaskPending) {
+        logMessage("StartAcq failed: %s\n", m_pDetInstance->GetErrorInfo(ret).c_str());
+        return ret;
+    }
+    logMessage("Continuous acquisition started.\n");
+    return Err_OK;
+}
+int DetectorUse::stopContinuousAcquisition() {
+    return m_pDetInstance->Abort(); // 终止当前任务
+}
+cv::Mat DetectorUse::getCurrentFrame() {
+    if (!m_pDetInstance) return cv::Mat();
+
+    int nFrameNum, nImageSize, nPropSize;
+    if (Err_OK != m_pDetInstance->QueryImageBuf(nFrameNum, nImageSize, nPropSize)) {
+        return cv::Mat();
+    }
+
+    std::vector<uchar> buffer(nImageSize);
+    int frameIndex;
+    if (Err_OK != m_pDetInstance->GetImageFromBuf(buffer.data(), nImageSize, nPropSize, frameIndex)) {
+        return cv::Mat();
+    }
+
+    int width = m_pDetInstance->GetAttrInt(Attr_Width);
+    int height = m_pDetInstance->GetAttrInt(Attr_Height);
+    // 数据clone，避免buffer指针重置导致数据丢失
+    return cv::Mat(height, width, CV_16UC1, buffer.data()).clone(); 
 }

@@ -31,6 +31,9 @@
     <Filter Include="DetectorUSe">
       <UniqueIdentifier>{bdedd242-2465-4251-b7b4-451218527d14}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Util">
+      <UniqueIdentifier>{1c32e671-d6b1-40b9-a312-f52126528524}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Detector.cpp">
@@ -58,7 +61,10 @@
       <Filter>QT\源文件</Filter>
     </ClCompile>
     <ClCompile Include="iniParser.cpp">
-      <Filter>IrayBase</Filter>
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageUtil.cpp">
+      <Filter>Util</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -87,7 +93,10 @@
       <Filter>DetectorUSe</Filter>
     </ClInclude>
     <ClInclude Include="iniParser.h">
-      <Filter>IrayBase</Filter>
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageUtil.h">
+      <Filter>Util</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

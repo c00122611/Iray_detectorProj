@@ -23,8 +23,14 @@ IrayWidget::IrayWidget(QWidget *parent)
         ui.gaincalButton->setEnabled(connected);
         });
 
-	
-	
+    //图像实时显示按钮
+
+    connect(m_manager, &DetectorUseManager::newFrameReceived,this, &IrayWidget::onNewFrameReceived);
+    connect(ui.startDisplayButton, &QPushButton::clicked, m_manager, &DetectorUseManager::startFluoroDisplay);
+    connect(ui.endDisplayButton, &QPushButton::clicked, m_manager, &DetectorUseManager::stopFluoroDisplay);
+
+
+   
 }
 void IrayWidget::onLogMessage(const QString& msg) {
     // 假设你有一个 QTextEdit 叫 logTextEdit
@@ -50,4 +56,8 @@ void IrayWidget::onApplicationModeChanged(const QString& mode, bool success) {
     }
 }
 
+void IrayWidget::onNewFrameReceived(const QImage& image) {
+    ui.imageLabel->setPixmap(QPixmap::fromImage(image).scaled(
+        ui.imageLabel->size(), Qt::KeepAspectRatio, Qt::FastTransformation));
+}
 
