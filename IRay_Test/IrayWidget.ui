@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
-    <height>400</height>
+    <width>959</width>
+    <height>605</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,8 +17,8 @@
    <widget class="QWidget" name="widget" native="true">
     <property name="geometry">
      <rect>
-      <x>0</x>
-      <y>20</y>
+      <x>20</x>
+      <y>10</y>
       <width>215</width>
       <height>85</height>
      </rect>
@@ -50,11 +50,37 @@
    <widget class="QTextEdit" name="logTextEdit">
     <property name="geometry">
      <rect>
-      <x>260</x>
-      <y>20</y>
+      <x>750</x>
+      <y>0</y>
       <width>191</width>
-      <height>171</height>
+      <height>511</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="selectModeButton">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>120</y>
+      <width>191</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>采集模式选择</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="disPlayImage" native="true">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>0</y>
+      <width>491</width>
+      <height>511</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(175, 175, 175);</string>
     </property>
    </widget>
   </widget>
@@ -63,7 +89,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>600</width>
+     <width>959</width>
      <height>26</height>
     </rect>
    </property>

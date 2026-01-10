@@ -17,9 +17,8 @@ public:
 	~IrayWidget();
 private slots:
 	void onLogMessage(const QString& msg);
-	//TODO Í¼ÏñÏà¹Ø
-	void onImageReceived(const cv::Mat& img);
 	void onConnectionChanged(bool connected);
+	void onApplicationModeChanged(const QString& mode, bool success);
 private:
 	Ui::IrayWidgetClass ui;
 	DetectorUseManager* m_manager;

@@ -7,8 +7,9 @@ DetectorUse* DetectorUse::s_Instance = nullptr;
 
 DetectorUse::DetectorUse() {
     m_pDetInstance = nullptr;
-    m_TotalDarkFrames = 0;
-    m_TotalLightFrames = 0;
+    //默认 采集128张图片做校正
+    m_TotalDarkFrames = 128;
+    m_TotalLightFrames = 128;
     m_bError = false;
 }
 
@@ -289,6 +290,84 @@ void DetectorUse::runGainCalibration() {
     }
 }
 
+QVector<ApplicationModeInfo> DetectorUse::parseApplicationModes(){
+    QVector<ApplicationModeInfo> modes;
+    std::string workDir = GetWorkDirPath();
+    std::string iniPath = workDir + "/DynamicApplicationMode.ini";
+
+    CIniParser ini;
+    if (!ini.ReadFile(iniPath)) {
+        logMessage("Warning: Failed to read DynamicApplicationMode.ini\n");
+        return modes;
+    }
+
+    int index = 1;
+    while (true) {
+        char sectionName[32];
+        snprintf(sectionName, sizeof(sectionName), "ApplicationMode%d", index);
+
+        // 尝试读取一个必有字段（如 PGA）来判断节是否存在
+        int dummyPga = 0;
+        if (!ini.GetItemValueI(sectionName, "PGA", dummyPga)) {
+            break; // 节不存在，结束循环
+        }
+
+        ApplicationModeInfo mode;
+        mode.name = QString("ApplicationMode%1").arg(index);
+
+        std::string subsetStr;
+        //默认值
+        int pga = 5, binning = 0, zoom = 0;
+        double freq = 6.0;
+
+        // 安全读取，失败则保留默认值
+        ini.GetItemValueS(sectionName, "subset", subsetStr);
+        ini.GetItemValueI(sectionName, "PGA", pga);
+        ini.GetItemValueI(sectionName, "Binning", binning);
+        ini.GetItemValueI(sectionName, "Zoom", zoom);
+        ini.GetItemValueF(sectionName, "Frequency", freq);
+
+        mode.subset = QString::fromStdString(subsetStr.empty() ? "Mode1" : subsetStr);
+        mode.pga = pga;
+        mode.binning = binning;
+        mode.zoom = zoom;
+        mode.frequency = freq;
+
+        modes.append(mode);
+        index++;
+    }
+
+    if (modes.isEmpty()) {
+        // 保底一个 Mode1
+        ApplicationModeInfo fallback;
+        fallback.name = "ApplicationMode1";
+        fallback.subset = "Mode1";
+        fallback.pga = 5;
+        fallback.binning = 0;
+        fallback.zoom = 0;
+        fallback.frequency = 6.0;
+        modes.append(fallback);
+    }
+
+    return modes;
+}
+
+int DetectorUse::setActiveSubset(const std::string& subsetName) {
+    if (!m_pDetInstance) {
+        logMessage("Error: Detector not connected.\n");
+        return Err_NotInitialized;
+    }
+
+    logMessage("Switching to subset: %s\n", subsetName.c_str());
+    int ret = m_pDetInstance->SyncInvoke(Cmd_SetCaliSubset, subsetName.c_str(), 5000);
+    if (ret == Err_OK) {
+        logMessage("Subset switched successfully.\n");
+    }
+    else {
+        logMessage("Failed to switch subset: %s\n", m_pDetInstance->GetErrorInfo(ret).c_str());
+    }
+    return ret;
+}
 void DetectorUse::runSingleAcquisition() {
     if (m_pDetInstance == nullptr) {
         logMessage("Error: Detector not connected. Please call Connect() first.\n");

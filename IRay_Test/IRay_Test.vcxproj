@@ -92,6 +92,8 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(QtMsBuild)\Qt.props" />
+    <Import Project="Iray.props" />
+    <Import Project="opencv -release.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -170,8 +172,10 @@
     <ClCompile Include="Detector.cpp" />
     <ClCompile Include="DetectorUse.cpp" />
     <ClCompile Include="DetectorUseManager.cpp" />
+    <ClCompile Include="iniParser.cpp" />
     <ClCompile Include="IrayWidget.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="ModeSelectionDialog.cpp" />
     <ClCompile Include="winevent.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -179,8 +183,10 @@
     <ClInclude Include="DetectorUse.h" />
     <QtMoc Include="DetectorUseManager.h" />
     <ClInclude Include="DisplayProgressbar.h" />
+    <ClInclude Include="iniParser.h" />
     <ClInclude Include="IrayInclude.h" />
     <QtMoc Include="IrayWidget.h" />
+    <QtMoc Include="ModeSelectionDialog.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="util.h" />

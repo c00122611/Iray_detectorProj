@@ -3,8 +3,19 @@
 #include "Detector.h"
 #include <Windows.h>
 #include <functional> 
-#include <string>     
+#include <string>
+#include <QVector>
+#include "iniParser.h"
 
+// 应用模式信息（modeinfo）在 workdir文件下的配置文件中可以看到
+struct ApplicationModeInfo {
+    QString name;      
+    QString subset;
+    int pga;
+    int binning;
+    int zoom;
+    double frequency; // fps
+};
 class DetectorUse {
 private:
     CDetector* m_pDetInstance;
@@ -20,7 +31,7 @@ private:
     static DetectorUse* s_Instance;
 
     // === 日志回调 ===
-    std::function<void(const std::string&)> m_logCallback; // 👈 新增
+    std::function<void(const std::string&)> m_logCallback; // 
 
     // === 内部辅助函数 ===
     int Initialize();      // 仅供 Connect 调用
@@ -55,7 +66,9 @@ public:
     // === 连接管理 ===
     int Connect();
     void Disconnect();
-
+    // === mode选择 ===
+    QVector<ApplicationModeInfo> parseApplicationModes();
+    int setActiveSubset(const std::string& subsetName);
     // === 校准流程 ===
     void runOffsetCalibration();
     void runGainCalibration();
