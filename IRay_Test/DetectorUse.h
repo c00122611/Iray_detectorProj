@@ -1,4 +1,8 @@
-﻿#pragma once
+﻿/**
+* @brief 检测器使用类
+ * @details 检测器使用类,对探测器使用的封装类，原子封装
+ */
+#pragma once
 #include "stdafx.h"
 #include "Detector.h"
 #include <Windows.h>
@@ -10,76 +14,71 @@
 
 // 应用模式信息（modeinfo）在 workdir文件下的配置文件中可以看到
 struct ApplicationModeInfo {
-    QString name;      
-    QString subset;
-    int pga;
-    int binning;
-    int zoom;
-    double frequency; // fps
+    QString name;           // e.g., "ApplicationMode1"
+    QString subset;         // e.g., "Mode1-2"
+    QString baseMode;       // e.g., "Mode1"
+    int pga = 5;
+    int binning = 0;
+    int zoom = 0;
+    double frequency = 6.0;
 };
+
+
 class DetectorUse {
 private:
     CDetector* m_pDetInstance;
-
     // 校准需要的帧数统计
     int m_TotalDarkFrames;
     int m_TotalLightFrames;
-
-    // 错误标志
     bool m_bError;
-
-    // 静态成员变量
+    bool m_bConnected = false; //连接状态
     static DetectorUse* s_Instance;
-
-    // === 日志回调 ===
-    std::function<void(const std::string&)> m_logCallback; // 
-
-    // === 内部辅助函数 ===
-    int Initialize();      // 仅供 Connect 调用
-    void Deinit();         // 仅供 Disconnect 调用
-    int InitCalibration(); // 供各校准步骤调用
-    int AcquireDarkImages();
-    int AcquireLightImages();
-    int GenerateOffsetTemplate();
-    int GenerateGainTemplate();
-    int GenerateDefectTemplate();
-    void FinishCalibration();
-    int AbortCalibration();
-    int GetValidDarkFrames();
-    int GetValidLightFrames();
-
-    // 内部日志函数
-    void logMessage(const char* format, ...); 
-
+    // 日志回调 
+    std::function<void(const std::string&)> m_logCallback; 
     // 静态回调
     static void SDKCallbackHandler(int nDetectorID, int nEventID, int nEventLevel,
         const char* pszMsg, int nParam1, int nParam2, int nPtrParamLen, void* pParam);
+    int Initialize();      // 仅供 Connect 调用
+    void Deinit();         // 仅供 Disconnect 调用
+    void logMessage(const char* format, ...);// 内部日志函数
 
 public:
     DetectorUse();
     ~DetectorUse();
-
     // 设置日志回调（供 Qt 层连接）
     void setLogCallback(std::function<void(const std::string&)> callback) {
         m_logCallback = callback;
     }
-
-    // === 连接管理 ===
+    //单步原子操作
+    //1：连接
     int Connect();
     void Disconnect();
-    // === mode选择 ===
+    //2：mode选择
     QVector<ApplicationModeInfo> parseApplicationModes();
+    QString getBaseMode(const QString& subset);
     int setActiveSubset(const std::string& subsetName);
-    // === 校准流程 ===
-    void runOffsetCalibration();
-    void runGainCalibration();
-
-    // === 采集 ===
-    void runSingleAcquisition();
-    void runSeqAcquisition();
-
+    //3：校正
+    int InitCalibration(); // 校准初始化
+    //3.1 offset校正
+    //3.2 gain校正 + defect校正
+    //3.3 完成校正
+    int gainInit();
+    int acquireLightField(int pointIndex, int framesPerPoint);
+    int acquireDarkField(int framesPerPoint);
+    int GenerateOffsetTemplate(); 
+    int GenerateGainTemplate();
+    int GenerateGainAndDefectTemplates();
+    int AbortCalibration();
+    int finishCalibrationProcess();
+    int GetValidDarkFrames(); 
+    int GetValidLightFrames();
+    //4：图像获取
     int initImageBuffer();
     int startContinuousAcquisition();
     int stopContinuousAcquisition();
     cv::Mat getCurrentFrame();
+    //5：属性读取
+    int getAttrInt(int attrId) {
+        return m_pDetInstance ? m_pDetInstance->GetAttrInt(attrId) : 0;
+    }
 };

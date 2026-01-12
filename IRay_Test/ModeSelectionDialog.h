@@ -1,19 +1,18 @@
-#pragma once
+// ModeSelectionDialog.h
+#ifndef MODESELECTIONDIALOG_H
+#define MODESELECTIONDIALOG_H
 
 #include <QDialog>
 #include <QTableWidget>
-#include <QPushButton>
-#include <QVBoxLayout>
 #include "DetectorUse.h"
-class ModeSelectionDialog  : public QDialog
-{
-	Q_OBJECT
+
+class ModeSelectionDialog : public QDialog {
+    Q_OBJECT
 
 public:
-	ModeSelectionDialog(QObject *parent);
-	~ModeSelectionDialog();
-	explicit ModeSelectionDialog(DetectorUse* detectorUse, QWidget* parent = nullptr);
-	QString selectedSubset() const { return m_selectedSubset; }
+    explicit ModeSelectionDialog(DetectorUse* detectorUse, QWidget* parent = nullptr);
+    QString selectedSubset() const { return m_selectedSubset; }
+
 private slots:
     void onRowDoubleClicked(int row, int column);
     void onOkClicked();
@@ -27,3 +26,4 @@ private:
     QString m_selectedSubset;
 };
 
+#endif // MODESELECTIONDIALOG_H

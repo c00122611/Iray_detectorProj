@@ -215,7 +215,7 @@ public:
 	*/
 	bool AddSectionComment(const string &strSectionName, const string &strComment);
 
-private:
+public:
 	/**
 	* StrCompare: Check string equal
 	* @param str1: first string value
@@ -289,6 +289,9 @@ private:
 	* @return value: Whether adding header comment succeeded
 	*/
 	bool AddSectionComment(unsigned  nSectionIndex, const string &strComment);
+
+	bool IsSectionExists(const std::string& strSectionName) const;
+	void CleanEmptySections();
 
 private:
 	string m_strFilePath;

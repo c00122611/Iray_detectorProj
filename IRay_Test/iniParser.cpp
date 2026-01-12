@@ -26,58 +26,115 @@ CIniParser::CIniParser() {}
 CIniParser::~CIniParser() {}
 
 bool CIniParser::ReadFile(const std::string& strPath) {
+    // 步骤1：初始化，清空原有数据，避免残留影响
     EraseAllContent();
     m_strFilePath = strPath;
 
+    // 步骤2：打开文件，校验文件可用性
     std::ifstream file(strPath.c_str());
     if (!file.is_open()) {
         return false;
     }
 
     std::string line;
-    std::string currentSection;
-    unsigned sectionIndex = 0;
+    std::string currentSection;  // 持久化当前节上下文
+    unsigned currentSectionIndex = 0; // 持久化当前节在容器中的索引
 
     while (std::getline(file, line)) {
-        // Remove comments (; or #)
+        // 步骤3：处理注释（; 或 #），截断注释部分，保留注释前的有效内容
         size_t commentPos = line.find(';');
-        if (commentPos == std::string::npos) commentPos = line.find('#');
+        if (commentPos == std::string::npos) {
+            commentPos = line.find('#');
+        }
         if (commentPos != std::string::npos) {
             line = line.substr(0, commentPos);
         }
 
+        // 步骤4：修剪前后空格，空行直接跳过（核心：不重置当前节上下文）
         trim(line);
-        if (line.empty()) continue;
+        if (line.empty()) {
+            continue;
+        }
 
-        // Check for [Section]
+        // 步骤5：解析节 [Section]，确保节必然被存入容器（核心修复点）
         if (line.front() == '[' && line.back() == ']') {
             currentSection = line.substr(1, line.size() - 2);
             trim(currentSection);
+
+            // 仅当节名非空时，处理容器存入
             if (!currentSection.empty()) {
-                m_vecSections.push_back(currentSection);
-                m_vecBlocks.emplace_back();
-                sectionIndex = static_cast<unsigned>(m_vecSections.size() - 1);
+                unsigned existingIndex;
+                // 先判断节是否已存在，避免重复添加
+                if (GetSectionIndex(currentSection, existingIndex)) {
+                    // 节已存在，切换到已有索引，保持上下文连续
+                    currentSectionIndex = existingIndex;
+                }
+                else {
+                    // 节不存在，强制添加到两个容器，建立对应关系
+                    m_vecSections.push_back(currentSection);
+                    m_vecBlocks.emplace_back(); // 构造空Block，与节一一对应
+                    currentSectionIndex = static_cast<unsigned>(m_vecSections.size() - 1);
+
+                    // 额外校验：确保索引与容器大小匹配（防止容器操作异常）
+                    if (currentSectionIndex >= m_vecBlocks.size()) {
+                        m_vecBlocks.emplace_back(); // 兜底，避免索引越界
+                    }
+                }
             }
             continue;
         }
 
-        // Parse key = value
+        // 步骤6：解析 key=value 键值对，确保存入对应节的容器
         size_t eqPos = line.find('=');
-        if (eqPos == std::string::npos) continue;
+        // 排除无效键值对（无=、=在开头、=在结尾）
+        if (eqPos == std::string::npos || eqPos == 0 || eqPos == line.size() - 1) {
+            continue;
+        }
 
         std::string key = line.substr(0, eqPos);
         std::string value = line.substr(eqPos + 1);
         trim(key);
         trim(value);
 
+        // 步骤7：严格校验存入条件，确保字段存入正确的节容器
         if (!key.empty() && !currentSection.empty()) {
-            m_vecBlocks[sectionIndex].vecItems.push_back(key);
-            m_vecBlocks[sectionIndex].vecValues.push_back(value);
-            m_vecBlocks[sectionIndex].vecComments.push_back(""); // No inline comment support in this impl
+            // 双重校验：索引合法 + 节名匹配（防止上下文错乱）
+            if (currentSectionIndex < m_vecBlocks.size() &&
+                StrCompare(m_vecSections[currentSectionIndex], currentSection)) {
+                IniSection& currentBlock = m_vecBlocks[currentSectionIndex];
+                // 避免重复添加相同key（可选，根据业务需求决定是否保留）
+                bool keyDuplicate = false;
+                for (const auto& existingKey : currentBlock.vecItems) {
+                    if (StrCompare(existingKey, key)) {
+                        keyDuplicate = true;
+                        break;
+                    }
+                }
+                if (!keyDuplicate) {
+                    currentBlock.vecItems.push_back(key);
+                    currentBlock.vecValues.push_back(value);
+                    currentBlock.vecComments.push_back("");
+                }
+            }
         }
     }
 
+    // 步骤8：清理无有效字段的空节，避免容器中留存无效数据
+    CleanEmptySections();
+
     return true;
+}
+
+// 实现空节清理私有方法
+void CIniParser::CleanEmptySections() {
+    // 倒序遍历，避免删除元素后索引错乱
+    for (int i = static_cast<int>(m_vecSections.size()) - 1; i >= 0; --i) {
+        // 仅当 Block 中无有效字段时，删除对应节
+        if (m_vecBlocks[i].vecItems.empty()) {
+            m_vecSections.erase(m_vecSections.begin() + i);
+            m_vecBlocks.erase(m_vecBlocks.begin() + i);
+        }
+    }
 }
 
 bool CIniParser::WriteFile(const std::string& strPath) {
@@ -357,4 +414,9 @@ bool CIniParser::SetItemValue(unsigned nSectionIndex, unsigned nItemIndex, const
 bool CIniParser::AddSectionComment(unsigned nSectionIndex, const std::string& strComment) {
     // Not implemented in this version
     return true;
+}
+
+bool CIniParser::IsSectionExists(const std::string& strSectionName) const {
+    unsigned index;
+    return GetSectionIndex(strSectionName, index);
 }

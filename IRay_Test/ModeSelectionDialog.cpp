@@ -1,17 +1,20 @@
+﻿// ModeSelectionDialog.cpp
 #include "ModeSelectionDialog.h"
 #include <QHeaderView>
-
+#include <QVBoxLayout>
+#include <QPushButton>
 ModeSelectionDialog::ModeSelectionDialog(DetectorUse* detectorUse, QWidget* parent)
     : QDialog(parent)
     , m_detectorUse(detectorUse)
     , m_selectedSubset("")
 {
     setWindowTitle("Select Application Mode");
-    resize(650, 400);
+    resize(750, 400);
 
     m_table = new QTableWidget(this);
-    m_table->setColumnCount(5);
-    m_table->setHorizontalHeaderLabels({ "Mode", "Subset", "PGA", "Binning", "Frame Rate (fps)" });
+    // 新增 "复用组" 列
+    m_table->setColumnCount(6);
+    m_table->setHorizontalHeaderLabels({ "Mode", "Subset", "PGA", "Binning", "FPS", "root" });
     m_table->horizontalHeader()->setStretchLastSection(true);
     m_table->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -28,9 +31,7 @@ ModeSelectionDialog::ModeSelectionDialog(DetectorUse* detectorUse, QWidget* pare
 
     loadModes();
 }
-ModeSelectionDialog::~ModeSelectionDialog() {
 
-}
 void ModeSelectionDialog::loadModes() {
     auto modes = m_detectorUse->parseApplicationModes();
     m_table->setRowCount(modes.size());
@@ -42,6 +43,7 @@ void ModeSelectionDialog::loadModes() {
         m_table->setItem(i, 2, new QTableWidgetItem(QString::number(mode.pga)));
         m_table->setItem(i, 3, new QTableWidgetItem(QString::number(mode.binning)));
         m_table->setItem(i, 4, new QTableWidgetItem(QString::number(mode.frequency, 'f', 1)));
+        m_table->setItem(i, 5, new QTableWidgetItem(mode.baseMode)); // 👈 显示复用组
     }
 
     if (modes.size() > 0) {
@@ -51,7 +53,7 @@ void ModeSelectionDialog::loadModes() {
 }
 
 void ModeSelectionDialog::onRowDoubleClicked(int row, int /*column*/) {
-    m_selectedSubset = m_table->item(row, 1)->text(); // subset ��
+    m_selectedSubset = m_table->item(row, 1)->text(); // subset 列
     accept();
 }
 

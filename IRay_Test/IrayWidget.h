@@ -24,5 +24,7 @@ private:
 	Ui::IrayWidgetClass ui;
 	DetectorUseManager* m_manager;
 	QThread* m_workerThread;
+
+	void initWidgetState();
 };
 

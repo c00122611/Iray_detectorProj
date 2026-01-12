@@ -4,6 +4,8 @@
 #include "DetectorUse.h"
 #include "ModeSelectionDialog.h"
 #include "ImageUtil.h"
+#include "Qdebug.h"
+#include "QMessageBox"
 class DetectorUseManager : public QObject {
     Q_OBJECT
 public:
@@ -14,8 +16,7 @@ public slots:
     void connectDevice();
     void disconnectDevice();
     void startOffsetCalibration();
-    void startGainCalibration();
-    void startSingleAcquisition();
+    void startGainDefectCalibration();
     void onSelectModeClicked();
     void onFluoroTimerTimeout();
     //实时显示

@@ -1,6 +1,7 @@
 ﻿#include "DetectorUse.h"
 #include <cstdarg>   // 
 #include <cstdio>    // 
+#include <QRegularExpression>
 
 // 静态成员变量定义
 DetectorUse* DetectorUse::s_Instance = nullptr;
@@ -14,7 +15,10 @@ DetectorUse::DetectorUse() {
 }
 
 DetectorUse::~DetectorUse() {
-    Disconnect();
+    if (m_pDetInstance) {
+        m_pDetInstance->Destroy(); // 最终释放
+        delete m_pDetInstance;
+    }
 }
 
 // === 新增：内部日志函数 ===
@@ -43,10 +47,6 @@ void DetectorUse::SDKCallbackHandler(int nDetectorID, int nEventID, int nEventLe
 
         switch (nEventID) {
         case Evt_ConnectProcess:
-            // 通过日志回调输出
-            if (pszMsg && s_Instance->m_logCallback) {
-                s_Instance->m_logCallback(pszMsg);
-            }
             break;
         case Evt_TaskResult_Failed:
             if (nParam1 == Cmd_ForceDarkContinuousAcq) {
@@ -65,46 +65,40 @@ void DetectorUse::SDKCallbackHandler(int nDetectorID, int nEventID, int nEventLe
 }
 
 int DetectorUse::Initialize() {
-    m_pDetInstance = new CDetector();
-
+    // 1. 加载 DLL（必须在 Create 之前）
     logMessage("Loading Library...");
     int ret = m_pDetInstance->LoadIRayLibrary();
-    if (Err_OK != ret) {
+    if (ret != Err_OK) {
         logMessage("FAILED\n");
         return ret;
     }
     logMessage("[OK]\n");
 
+    // 2. 创建探测器实例
     logMessage("Creating Instance...");
     ret = m_pDetInstance->Create(GetWorkDirPath().c_str(), SDKCallbackHandler);
-    if (Err_OK != ret) {
+    if (ret != Err_OK) {
         logMessage("FAILED\n");
         return ret;
     }
     logMessage("[OK]\n");
 
+    // 3. 连接设备
     logMessage("Connecting Device...");
     ret = m_pDetInstance->SyncInvoke(Cmd_Connect, 30000);
-    if (Err_OK != ret) {
+    if (ret != Err_OK) {
         logMessage("FAILED\n");
         return ret;
     }
     logMessage("[OK]\n");
 
-    logMessage("Setting Application Mode...");
-    ret = m_pDetInstance->SyncInvoke(Cmd_SetCaliSubset, "Mode1", 5000);
-    if (Err_OK != ret) {
-        logMessage("FAILED\n");
-    }
-    else {
-        logMessage("[OK]\n");
-    }
     return ret;
 }
 
 void DetectorUse::Deinit() {
     if (m_pDetInstance) {
         m_pDetInstance->Destroy();
+        // 关键：在 Destroy 后释放 DLL
         m_pDetInstance->FreeIRayLibrary();
         delete m_pDetInstance;
         m_pDetInstance = nullptr;
@@ -112,60 +106,34 @@ void DetectorUse::Deinit() {
 }
 
 int DetectorUse::InitCalibration() {
+    // 校正初始化
     int ret = m_pDetInstance->SyncInvoke(Cmd_CalibrationInit, 5000);
     if (Err_OK == ret) {
         m_TotalDarkFrames = m_pDetInstance->GetAttrInt(Attr_OffsetTotalFrames);
         m_TotalLightFrames = m_pDetInstance->GetAttrInt(Attr_GainTotalFrames);
     }
+    logMessage("m_TotalDarkFrames:"+ m_TotalDarkFrames);
+    logMessage("m_TotalLightFrames:"+ m_TotalLightFrames);
     return ret;
 }
-
-int DetectorUse::AcquireDarkImages() {
-    m_bError = false;
-    m_pDetInstance->Invoke(Cmd_ForceDarkContinuousAcq, 0);
-
-    int nValid = 0;
-    while (nValid < m_TotalDarkFrames && !m_bError) {
-        nValid = GetValidDarkFrames();
-        Sleep(100);
-    }
-
-    return m_bError ? Err_Unknown : Err_OK;
-}
-
-int DetectorUse::AcquireLightImages() {
-    m_bError = false;
-    m_pDetInstance->Invoke(Cmd_StartAcq);
-
-    int nValid = 0;
-    while (nValid < m_TotalLightFrames && !m_bError) {
-        nValid = GetValidLightFrames();
-        Sleep(100);
-    }
-
-    return m_bError ? Err_Unknown : Err_OK;
-}
-
 int DetectorUse::GenerateOffsetTemplate() {
-    return m_pDetInstance->Invoke(Cmd_OffsetGeneration);
+    logMessage("开始 Offset 校准...\n");
+    int ret = m_pDetInstance->SyncInvoke(Cmd_OffsetGeneration, 10000);
+    if (ret == Err_OK) {
+        logMessage("Offset 校准成功\n");
+    }
+    else {
+        logMessage("Offset 校准失败: %s\n",
+            m_pDetInstance->GetErrorInfo(ret).c_str());
+    }
+    return ret;
 }
-
 int DetectorUse::GenerateGainTemplate() {
     return m_pDetInstance->Invoke(Cmd_GainGeneration);
 }
-
-int DetectorUse::GenerateDefectTemplate() {
-    return m_pDetInstance->Invoke(Cmd_DefectGeneration);
-}
-
 int DetectorUse::AbortCalibration() {
     return m_pDetInstance->Abort();
 }
-
-void DetectorUse::FinishCalibration() {
-    m_pDetInstance->SyncInvoke(Cmd_FinishGenerationProcess, 3000);
-}
-
 int DetectorUse::GetValidDarkFrames() {
     return m_pDetInstance->GetAttrInt(Attr_OffsetValidFrames);
 }
@@ -175,183 +143,173 @@ int DetectorUse::GetValidLightFrames() {
 }
 
 int DetectorUse::Connect() {
-    if (m_pDetInstance != nullptr) {
+    if (m_bConnected) {
         logMessage("Already connected.\n");
         return Err_OK;
     }
 
-    logMessage("开始初始化 Initializing Detector...\n");
-    int ret = Initialize();
-
-    if (Err_OK == ret) {
+    // 如果已有实例，直接重试连接
+    if (!m_pDetInstance) {
+        // 首次连接：创建实例
+        m_pDetInstance = new CDetector();
         s_Instance = this;
+
+        // 加载 DLL + 创建
+        int ret = m_pDetInstance->LoadIRayLibrary();
+        if (ret != Err_OK) return ret;
+
+        ret = m_pDetInstance->Create(GetWorkDirPath().c_str(), SDKCallbackHandler);
+        if (ret != Err_OK) return ret;
+    }
+
+    // 尝试连接（可多次调用）
+    logMessage("Connecting Device...\n");
+    int ret = m_pDetInstance->SyncInvoke(Cmd_Connect, 30000);
+    if (ret == Err_OK) {
+        m_bConnected = true;
         logMessage("Detector Connected Successfully.\n");
     }
     else {
-        logMessage("Connection Failed.\n");
+        logMessage("Connection Failed: %s\n",
+            m_pDetInstance->GetErrorInfo(ret).c_str());
     }
-
     return ret;
 }
-
 void DetectorUse::Disconnect() {
-    if (m_pDetInstance != nullptr) {
-        s_Instance = nullptr;
-        Deinit();
+    if (m_bConnected) {
+        // 仅断开连接，不销毁实例
+        m_pDetInstance->SyncInvoke(Cmd_Disconnect, 5000);
+        m_bConnected = false;
         logMessage("Detector Disconnected.\n");
     }
 }
 
-void DetectorUse::runOffsetCalibration() {
-    if (m_pDetInstance == nullptr) {
-        logMessage("Error: Detector not connected. Please call Connect() first.\n");
-        return;
-    }
-
-    bool bSuccess = false;
-    do {
-        m_pDetInstance->SetAttr(Cfg_CalibrationFlow, 1);
-
-        if (Err_OK != InitCalibration()) {
-            logMessage("InitCalibration failed.\n");
-            break;
-        }
-
-        logMessage("Starting Dark Field Acquisition...\n");
-        if (Err_OK != AcquireDarkImages()) {
-            logMessage("Dark Field Acquisition failed.\n");
-            break;
-        }
-
-        logMessage("Generating Offset Map...\n");
-        if (Err_OK != GenerateOffsetTemplate()) {
-            logMessage("Generate Offset failed.\n");
-            break;
-        }
-
-        bSuccess = true;
-
-    } while (false);
-
-    FinishCalibration();
-
-    if (bSuccess) {
-        logMessage("Offset Calibration Completed Successfully.\n");
-    }
-    else {
-        logMessage("Offset Calibration FAILED.\n");
-    }
+int DetectorUse::finishCalibrationProcess()
+{
+    return m_pDetInstance->SyncInvoke(Cmd_FinishGenerationProcess, 3000);
 }
 
-void DetectorUse::runGainCalibration() {
-    if (m_pDetInstance == nullptr) {
-        logMessage("Error: Detector not connected. Please call Connect() first.\n");
-        return;
+int DetectorUse::gainInit()
+{
+    return m_pDetInstance->SyncInvoke(Cmd_GainInit, 5000);
+}
+int DetectorUse::acquireLightField(int pointIndex, int framesPerPoint)
+{
+    logMessage("请开启射线（增益点 %d），开始采集亮场...\n", pointIndex + 1);
+    // 启动亮场采集
+    m_pDetInstance->Invoke(Cmd_StartAcq);
+
+    // 等待用户操作 + 采集完成
+    int nValid = 0;
+    while (nValid < framesPerPoint && !m_bError) {
+        nValid = m_pDetInstance->GetAttrInt(Attr_GainValidFrames);
+        Sleep(100);
     }
+    return m_bError ? Err_Unknown : Err_OK;
+}
+int DetectorUse::acquireDarkField(int framesPerPoint)
+{
+    logMessage("关闭射线，开始采集暗场...\n");
 
-    bool bSuccess = false;
-    do {
-        m_pDetInstance->SetAttr(Cfg_CalibrationFlow, 1);
+    // 启动暗场采集
+    m_pDetInstance->Invoke(Cmd_ForceDarkContinuousAcq, 0);
 
-        if (Err_OK != InitCalibration()) {
-            logMessage("InitCalibration failed.\n");
-            break;
-        }
-
-        logMessage("Starting Light Field Acquisition...\n");
-        if (Err_OK != AcquireLightImages()) {
-            logMessage("Light Field Acquisition failed.\n");
-            break;
-        }
-
-        logMessage("Generating Gain Map...\n");
-        if (Err_OK != GenerateGainTemplate()) {
-            logMessage("Generate Gain failed.\n");
-            break;
-        }
-
-        logMessage("Generating Defect Map...\n");
-        if (Err_OK != GenerateDefectTemplate()) {
-            logMessage("Generate Defect failed.\n");
-            break;
-        }
-
-        bSuccess = true;
-
-    } while (false);
-
-    FinishCalibration();
-
-    if (bSuccess) {
-        logMessage("Gain Calibration Completed Successfully.\n");
+    // 等待采集完成
+    int nValid = 0;
+    while (nValid < framesPerPoint && !m_bError) {
+        nValid = m_pDetInstance->GetAttrInt(Attr_OffsetValidFrames); // 注意：暗场用 OffsetValidFrames
+        Sleep(100);
     }
-    else {
-        logMessage("Gain Calibration FAILED.\n");
-    }
+    return m_bError ? Err_Unknown : Err_OK;
 }
 
-QVector<ApplicationModeInfo> DetectorUse::parseApplicationModes(){
+int DetectorUse::GenerateGainAndDefectTemplates()
+{
+    logMessage("生成 Gain 模板...\n");
+    int ret = m_pDetInstance->Invoke(Cmd_GainGeneration);
+    if (ret != Err_OK) return ret;
+
+    logMessage("生成 Defect 模板...\n");
+    ret = m_pDetInstance->Invoke(Cmd_DefectGeneration);
+    return ret;
+}
+QString DetectorUse::getBaseMode(const QString& subset) {
+    // 使用正则提取 "ModeX" 部分（支持 Mode1, Mode1-2, ModeFluoro-10 等）
+    QRegularExpression re(R"(^([a-zA-Z]+\d+))");
+    QRegularExpressionMatch match = re.match(subset);
+    if (match.hasMatch()) {
+        return match.captured(1);
+    }
+    return subset; // fallback
+}
+QVector<ApplicationModeInfo> DetectorUse::parseApplicationModes() {
     QVector<ApplicationModeInfo> modes;
     std::string workDir = GetWorkDirPath();
-    std::string iniPath = workDir + "/DynamicApplicationMode.ini";
+    std::string iniPath = workDir + "\\DynamicApplicationMode.ini";
 
     CIniParser ini;
     if (!ini.ReadFile(iniPath)) {
-        logMessage("Warning: Failed to read DynamicApplicationMode.ini\n");
+        logMessage("Warning: Failed to read DynamicApplicationMode.ini at %s\n", iniPath.c_str());
         return modes;
     }
 
-    int index = 1;
-    while (true) {
+    // 安全扫描：最多尝试 20 个 ApplicationMode
+    for (int index = 1; index <= 20; ++index) {
         char sectionName[32];
         snprintf(sectionName, sizeof(sectionName), "ApplicationMode%d", index);
 
-        // 尝试读取一个必有字段（如 PGA）来判断节是否存在
-        int dummyPga = 0;
-        if (!ini.GetItemValueI(sectionName, "PGA", dummyPga)) {
-            break; // 节不存在，结束循环
+        if (!ini.IsSectionExists(sectionName)) {
+            continue; // 跳过不存在的节
         }
 
-        ApplicationModeInfo mode;
-        mode.name = QString("ApplicationMode%1").arg(index);
-
         std::string subsetStr;
-        //默认值
-        int pga = 5, binning = 0, zoom = 0;
+        int pga = 5;
+        int binning = 0;
+        int zoom = 0;
         double freq = 6.0;
 
-        // 安全读取，失败则保留默认值
+        // 读取字段（失败则保留默认值）
         ini.GetItemValueS(sectionName, "subset", subsetStr);
         ini.GetItemValueI(sectionName, "PGA", pga);
         ini.GetItemValueI(sectionName, "Binning", binning);
         ini.GetItemValueI(sectionName, "Zoom", zoom);
         ini.GetItemValueF(sectionName, "Frequency", freq);
 
-        mode.subset = QString::fromStdString(subsetStr.empty() ? "Mode1" : subsetStr);
+        // 如果 subset 为空，用默认值
+        if (subsetStr.empty()) {
+            char defaultSubset[32];
+            snprintf(defaultSubset, sizeof(defaultSubset), "Mode%d", index);
+            subsetStr = defaultSubset;
+        }
+
+        ApplicationModeInfo mode;
+        mode.name = QString("ApplicationMode%1").arg(index);
+        mode.subset = QString::fromStdString(subsetStr);
+        mode.baseMode = getBaseMode(mode.subset);
         mode.pga = pga;
         mode.binning = binning;
         mode.zoom = zoom;
         mode.frequency = freq;
 
         modes.append(mode);
-        index++;
     }
 
+    // 保底机制
     if (modes.isEmpty()) {
-        // 保底一个 Mode1
         ApplicationModeInfo fallback;
         fallback.name = "ApplicationMode1";
         fallback.subset = "Mode1";
+        fallback.baseMode = "Mode1";
         fallback.pga = 5;
         fallback.binning = 0;
         fallback.zoom = 0;
         fallback.frequency = 6.0;
         modes.append(fallback);
+        logMessage("No valid ApplicationMode found. Using fallback mode.\n");
     }
 
     return modes;
 }
-
 int DetectorUse::setActiveSubset(const std::string& subsetName) {
     if (!m_pDetInstance) {
         logMessage("Error: Detector not connected.\n");
@@ -368,35 +326,7 @@ int DetectorUse::setActiveSubset(const std::string& subsetName) {
     }
     return ret;
 }
-void DetectorUse::runSingleAcquisition() {
-    if (m_pDetInstance == nullptr) {
-        logMessage("Error: Detector not connected. Please call Connect() first.\n");
-        return;
-    }
 
-    logMessage("Starting Single Acquisition...\n");
-
-    m_pDetInstance->SetAttr(Attr_UROM_FluroSync_W, Enm_FluroSync_SyncOut);
-    m_pDetInstance->SyncInvoke(Cmd_WriteUserRAM, 4000);
-
-    int nExposeWindowTime = 5000;
-    int nTimeOut = nExposeWindowTime + 2000;
-
-    m_pDetInstance->SetAttr(Cfg_ClearAcqParam_DelayTime, nExposeWindowTime);
-    int ret = m_pDetInstance->SyncInvoke(Cmd_ClearAcq, nTimeOut);
-
-    if (ret == Err_OK || ret == Err_TaskPending) {
-        logMessage("Single Acquisition command sent.\n");
-    }
-    else {
-        logMessage("Single Acquisition failed: %s\n", m_pDetInstance->GetErrorInfo(ret).c_str());
-    }
-}
-void DetectorUse::runSeqAcquisition() {
-    logMessage("Sequential acquisition not implemented yet.\n");
-}
-
-// DetectorUse.cpp
 int DetectorUse::initImageBuffer() {
     // 获取单帧大小
     int width = m_pDetInstance->GetAttrInt(Attr_Width);
