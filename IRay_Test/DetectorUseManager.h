@@ -22,6 +22,13 @@ public slots:
     //实时显示
     void startFluoroDisplay();
     void stopFluoroDisplay();
+    //图像采集
+    void startSingleAcquisition();
+    //用于 DR 或 CT 
+    void startseqAcquisition();
+
+    void startAveragedAcquisition(int avgFrames, int totalGroups);
+    void stopAveragedAcquisition(); 
 
 signals:
     void logMessage(const QString& msg);
@@ -29,9 +36,15 @@ signals:
     void connectionChanged(bool connected);
     void applicationModeChanged(const QString& modeName, bool success);
     void newFrameReceived(const QImage& image);
+
+    void averagedImageReady(const cv::Mat& img, int groupIndex);
 private:
     DetectorUse m_detectorUse;
     //日志函数
     void logInfo(const QString& msg);
     QTimer* m_fluoroTimer = nullptr;
+
+    QThread* m_workerThread = nullptr;
+    volatile bool m_stopRequested = false;
+    int m_lastFluoroFrameNo = -1;
 };

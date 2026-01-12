@@ -141,8 +141,9 @@ int DetectorUse::GetValidDarkFrames() {
 int DetectorUse::GetValidLightFrames() {
     return m_pDetInstance->GetAttrInt(Attr_GainValidFrames);
 }
-
+//
 int DetectorUse::Connect() {
+
     if (m_bConnected) {
         logMessage("Already connected.\n");
         return Err_OK;
@@ -155,11 +156,22 @@ int DetectorUse::Connect() {
         s_Instance = this;
 
         // 加载 DLL + 创建
+        logMessage("Loading Library...");
         int ret = m_pDetInstance->LoadIRayLibrary();
-        if (ret != Err_OK) return ret;
+        if (ret != Err_OK) {
+            logMessage("FAILED\n");
+            return ret;
+        }
+        logMessage("[OK]\n");
 
+        // 2. 创建探测器实例
+        logMessage("Creating Instance...");
         ret = m_pDetInstance->Create(GetWorkDirPath().c_str(), SDKCallbackHandler);
-        if (ret != Err_OK) return ret;
+        if (ret != Err_OK) {
+            logMessage("FAILED\n");
+            return ret;
+        }
+        logMessage("[OK]\n");
     }
 
     // 尝试连接（可多次调用）
@@ -357,24 +369,36 @@ int DetectorUse::startContinuousAcquisition() {
     return Err_OK;
 }
 int DetectorUse::stopContinuousAcquisition() {
-    return m_pDetInstance->Abort(); // 终止当前任务
+    if (!m_pDetInstance) return Err_NotInitialized;
+
+    int ret = m_pDetInstance->SyncInvoke(Cmd_StopAcq, 2000);
+    if (ret == Err_OK || ret == Err_TaskPending) {
+        m_pDetInstance->ClearImageBuf(); // 清空残留图像
+        logMessage("Continuous acquisition stopped.\n");
+        return Err_OK;
+    }
+    logMessage("StopAcq failed: %s\n", m_pDetInstance->GetErrorInfo(ret).c_str());
+    return ret;
 }
-cv::Mat DetectorUse::getCurrentFrame() {
-    if (!m_pDetInstance) return cv::Mat();
+
+//每个获取的图像数据赋予一个 帧号，确保图像数据不重复
+std::pair<cv::Mat, int> DetectorUse::getCurrentFrameWithIndex() {
+    if (!m_pDetInstance) return { cv::Mat(), -1 };
 
     int nFrameNum, nImageSize, nPropSize;
     if (Err_OK != m_pDetInstance->QueryImageBuf(nFrameNum, nImageSize, nPropSize)) {
-        return cv::Mat();
+        return { cv::Mat(), -1 };
     }
 
     std::vector<uchar> buffer(nImageSize);
     int frameIndex;
     if (Err_OK != m_pDetInstance->GetImageFromBuf(buffer.data(), nImageSize, nPropSize, frameIndex)) {
-        return cv::Mat();
+        return { cv::Mat(), -1 };
     }
 
     int width = m_pDetInstance->GetAttrInt(Attr_Width);
     int height = m_pDetInstance->GetAttrInt(Attr_Height);
-    // 数据clone，避免buffer指针重置导致数据丢失
-    return cv::Mat(height, width, CV_16UC1, buffer.data()).clone(); 
+    cv::Mat img = cv::Mat(height, width, CV_16UC1, buffer.data()).clone();
+    return { img, frameIndex };   
 }
+    

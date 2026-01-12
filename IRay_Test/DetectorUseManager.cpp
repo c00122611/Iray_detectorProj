@@ -132,26 +132,109 @@ void DetectorUseManager::onSelectModeClicked() {
 }
 
 // DetectorUseManager.cpp
-void DetectorUseManager::startFluoroDisplay() {
+void DetectorUseManager::startFluoroDisplay()
+{
     if (!m_fluoroTimer) {
         m_fluoroTimer = new QTimer(this);
         connect(m_fluoroTimer, &QTimer::timeout, this, &DetectorUseManager::onFluoroTimerTimeout);
     }
-    // 3帧帧率 显示 
-    m_fluoroTimer->start(500);
+    // 启动 Fluoro 显示（例如 2fps → 500ms）
+    m_fluoroTimer->start(500); // 可根据实际帧率动态设置
+    logInfo("Fluoro 显示已启动");
 }
 
-void DetectorUseManager::stopFluoroDisplay() {
-    if (m_fluoroTimer) {
+void DetectorUseManager::stopFluoroDisplay()
+{
+    if (m_fluoroTimer && m_fluoroTimer->isActive()) {
         m_fluoroTimer->stop();
+        logInfo("Fluoro 显示已停止");
     }
 }
 
-void DetectorUseManager::onFluoroTimerTimeout() {
-    cv::Mat frame = m_detectorUse.getCurrentFrame();
-    if (!frame.empty()) {
+void DetectorUseManager::onFluoroTimerTimeout()
+{
+    auto [frame, frameNo] = m_detectorUse.getCurrentFrameWithIndex();
+    if (!frame.empty() && frameNo != m_lastFluoroFrameNo) {
+        m_lastFluoroFrameNo = frameNo;
         QImage img = MatToQImage(frame);
         emit newFrameReceived(img);
+    }
+}
+
+// DetectorUseManager.cpp
+void DetectorUseManager::startAveragedAcquisition(int avgFrames, int totalGroups)
+{
+    if (avgFrames <= 0 || totalGroups <= 0) {
+        emit logMessage("错误：平均帧数和组数必须大于0");
+        return;
+    }
+
+    m_stopRequested = false;
+
+    // 创建工作线程（Lambda 捕获 this 需谨慎，这里用 QThread::create 安全）
+    m_workerThread = QThread::create([this, avgFrames, totalGroups]() {
+        // 1. 初始化图像缓存
+        int ret = m_detectorUse.initImageBuffer();
+        if (ret != Err_OK) {
+            emit logMessage(QString("初始化图像缓存失败: %1").arg(ret));
+            return;
+        }
+
+        // 2. 启动连续采集
+        ret = m_detectorUse.startContinuousAcquisition();
+        if (ret != Err_OK && ret != Err_TaskPending) {
+            emit logMessage(QString("启动采集失败: %1").arg(ret));
+            return;
+        }
+
+        emit logMessage(QString("开始帧平均采集：每组 %1 帧，共 %2 组").arg(avgFrames).arg(totalGroups));
+
+        // 3. 帧平均主循环
+        for (int group = 0; group < totalGroups && !m_stopRequested; ++group) {
+            cv::Mat accumulator;
+            int validCount = 0;
+
+            while (validCount < avgFrames && !m_stopRequested) {
+                auto [frame, idx] = m_detectorUse.getCurrentFrameWithIndex();
+                if (frame.empty()) {
+                    QThread::msleep(1); // 避免忙等待
+                    continue;
+                }
+
+                if (accumulator.empty()) {
+                    accumulator = cv::Mat::zeros(frame.size(), CV_32F);
+                }
+                frame.convertTo(frame, CV_32F);
+                cv::add(accumulator, frame, accumulator);
+                validCount++;
+            }
+
+            if (validCount > 0) {
+                accumulator /= static_cast<float>(validCount);
+                cv::Mat averaged16U;
+                accumulator.convertTo(averaged16U, CV_16U);
+
+                // 👇 关键：通过信号发回主线程（Qt 自动跨线程投递）
+                emit averagedImageReady(averaged16U, group);
+                emit logMessage(QString("第 %1 组平均图完成").arg(group + 1));
+            }
+        }
+
+        // 4. 停止采集 + 清空缓存
+        m_detectorUse.stopContinuousAcquisition();
+        emit logMessage("帧平均采集完成");
+        });
+
+    // 线程结束后自动清理
+    connect(m_workerThread, &QThread::finished, m_workerThread, &QObject::deleteLater);
+    m_workerThread->start();
+}
+
+void DetectorUseManager::stopAveragedAcquisition()
+{
+    m_stopRequested = true;
+    if (m_workerThread && m_workerThread->isRunning()) {
+        m_workerThread->wait(2000); // 最多等2秒
     }
 }
 
