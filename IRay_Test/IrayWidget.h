@@ -7,6 +7,8 @@
 #include <QThread>
 #include<QTextedit>
 #include<opencv2/opencv.hpp>
+#include <QFileDialog>
+#include <QStandardPaths>
 
 class IrayWidget : public QMainWindow
 {
@@ -20,7 +22,7 @@ private slots:
 	void onConnectionChanged(bool connected);
 	void onApplicationModeChanged(const QString& mode, bool success);
 	void onNewFrameReceived(const QImage& image);
-
+	void onAveragedImageReceived(const cv::Mat& img, int groupIndex, const QString& saveDir);
 private:
 	Ui::IrayWidgetClass ui;
 	DetectorUseManager* m_manager;

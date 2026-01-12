@@ -24,9 +24,21 @@ IrayWidget::IrayWidget(QWidget *parent)
     connect(m_manager, &DetectorUseManager::newFrameReceived,this, &IrayWidget::onNewFrameReceived);
     connect(ui.startDisplayButton, &QPushButton::clicked, m_manager, &DetectorUseManager::startFluoroDisplay);
     connect(ui.endDisplayButton, &QPushButton::clicked, m_manager, &DetectorUseManager::stopFluoroDisplay);
+    
+    connect(m_manager, &DetectorUseManager::averagedImageReady,this, &IrayWidget::onAveragedImageReceived);
+    connect(ui.btnStartAvg, &QPushButton::clicked, this, [=]() {
 
+        int avg = ui.spinAvgFrames->value();     // 如 4
+        int groups = ui.spinTotalGroups->value(); // 如 10
 
-   
+        // 弹出文件夹选择框
+        QString saveDir = QFileDialog::getExistingDirectory(
+            this, QString::fromLocal8Bit("选择平均图保存路径"),
+            QStandardPaths::writableLocation(QStandardPaths::PicturesLocation)
+        );  
+        if (saveDir.isEmpty()) return;
+
+        m_manager->startAveragedAcquisition(avg, groups, saveDir); });
 }
 void IrayWidget::onLogMessage(const QString& msg) {
     ui.logTextEdit->append(msg);
@@ -65,4 +77,28 @@ void IrayWidget::initWidgetState() {
     ui.endDisplayButton->setEnabled(FALSE);
     ui.selectModeButton->setEnabled(FALSE);
 }
+
+void IrayWidget::onAveragedImageReceived(const cv::Mat& img, int groupIndex, const QString& saveDir)
+{
+    if (img.empty() || img.type() != CV_16UC1) {
+        ui.logTextEdit->append(QString::fromLocal8Bit("收到无效平均图"));
+        return;
+    }
+    // 构造文件名：Avg_Group000.raw
+    QString fileName = QString("Avg_Group%1.raw").arg(groupIndex, 3, 10, QChar('0'));
+    QString fullPath = saveDir + "/" + fileName;
+
+    // 保存为 .raw（纯二进制，无头）
+    QFile file(fullPath);
+    if (file.open(QIODevice::WriteOnly)) {
+        file.write(reinterpret_cast<const char*>(img.data), img.total() * img.elemSize());
+        file.close();
+        ui.logTextEdit->append(QString("平均图已保存: %1").arg(fullPath));
+    }
+    else {
+        ui.logTextEdit->append(QString("保存失败: %1").arg(fullPath));
+    }
+}
+
+
 

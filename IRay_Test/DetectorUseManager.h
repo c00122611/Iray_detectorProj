@@ -6,6 +6,9 @@
 #include "ImageUtil.h"
 #include "Qdebug.h"
 #include "QMessageBox"
+#include "QDir"
+#include <QCoreApplication>
+#include <QThread>
 class DetectorUseManager : public QObject {
     Q_OBJECT
 public:
@@ -23,11 +26,7 @@ public slots:
     void startFluoroDisplay();
     void stopFluoroDisplay();
     //图像采集
-    void startSingleAcquisition();
-    //用于 DR 或 CT 
-    void startseqAcquisition();
-
-    void startAveragedAcquisition(int avgFrames, int totalGroups);
+    void startAveragedAcquisition(int avgFrames, int totalGroups, const QString& saveDir);
     void stopAveragedAcquisition(); 
 
 signals:
@@ -36,8 +35,7 @@ signals:
     void connectionChanged(bool connected);
     void applicationModeChanged(const QString& modeName, bool success);
     void newFrameReceived(const QImage& image);
-
-    void averagedImageReady(const cv::Mat& img, int groupIndex);
+    void averagedImageReady(const cv::Mat& img, int groupIndex, const QString& savePath);
 private:
     DetectorUse m_detectorUse;
     //日志函数
