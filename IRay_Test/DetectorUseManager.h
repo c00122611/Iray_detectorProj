@@ -9,6 +9,10 @@
 #include "QDir"
 #include <QCoreApplication>
 #include <QThread>
+#include <QElapsedTimer>
+#include <QFileDialog>
+#include <QStandardPaths>
+
 class DetectorUseManager : public QObject {
     Q_OBJECT
 public:
@@ -26,6 +30,7 @@ public slots:
     void startFluoroDisplay();
     void stopFluoroDisplay();
     //图像采集
+    void startPreAcquireAcquisition(const QString& saveDir);
     void startAveragedAcquisition(int avgFrames, int totalGroups, const QString& saveDir);
     void stopAveragedAcquisition(); 
 
@@ -36,6 +41,7 @@ signals:
     void applicationModeChanged(const QString& modeName, bool success);
     void newFrameReceived(const QImage& image);
     void averagedImageReady(const cv::Mat& img, int groupIndex, const QString& savePath);
+    void preAcquiredImageReady(const cv::Mat& img, const QString& savePath);
 private:
     DetectorUse m_detectorUse;
     //日志函数

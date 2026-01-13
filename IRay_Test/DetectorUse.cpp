@@ -353,7 +353,7 @@ int DetectorUse::initImageBuffer() {
 int DetectorUse::startContinuousAcquisition() {
     if (!m_pDetInstance) return Err_NotInitialized;
 
-    // 确保校正已启用
+    // 默认启用soft校正
     int correctOpt = Enm_CorrectOp_SW_PreOffset |
         Enm_CorrectOp_SW_Gain |
         Enm_CorrectOp_SW_Defect;
@@ -401,4 +401,32 @@ std::pair<cv::Mat, int> DetectorUse::getCurrentFrameWithIndex() {
     cv::Mat img = cv::Mat(height, width, CV_16UC1, buffer.data()).clone();
     return { img, frameIndex };   
 }
+
+// 获取 PreAcquire 图像（Pull 模式）
+std::pair<cv::Mat, int> DetectorUse::getPreAcquiredFrame()
+{
+    // 与 getCurrentFrameWithIndex() 逻辑一致（Pull 图像）
+    auto [frame, idx] = getCurrentFrameWithIndex();
+    return { frame, idx };
+}
+int DetectorUse::preAcquire()
+{
+    if (!m_pDetInstance) return Err_NotInitialized;
+
+    // 设置校正选项（必须启用 Offset/Gain/Defect）
+    int correctOpt = Enm_CorrectOp_SW_PreOffset |
+        Enm_CorrectOp_SW_Gain |
+        Enm_CorrectOp_SW_Defect;
+    m_pDetInstance->SetAttr(Attr_CurrentCorrectOption, correctOpt);
+
+    // 启动 PreAcquire：Clear + Delay + 单帧采集
+    int ret = m_pDetInstance->Invoke(Cmd_ClearAcq);
+    if (ret != Err_OK && ret != Err_TaskPending) {
+        logMessage("PreAcquire failed: %s", m_pDetInstance->GetErrorInfo(ret).c_str());
+        return ret;
+    }
+
+    logMessage("PreAcquire started.");
+}
+
     

@@ -23,6 +23,7 @@ private slots:
 	void onApplicationModeChanged(const QString& mode, bool success);
 	void onNewFrameReceived(const QImage& image);
 	void onAveragedImageReceived(const cv::Mat& img, int groupIndex, const QString& saveDir);
+	void onPreAcqImageReceived(const cv::Mat& img, const QString& saveDir);
 private:
 	Ui::IrayWidgetClass ui;
 	DetectorUseManager* m_manager;

@@ -78,6 +78,9 @@ public:
     int startContinuousAcquisition();
     int stopContinuousAcquisition();
     std::pair<cv::Mat, int> getCurrentFrameWithIndex();
+    int preAcquire(); // 新增接口
+    // 获取 PreAcquire 图像（Pull 模式）
+    std::pair<cv::Mat, int>getPreAcquiredFrame();
     //5：属性读取
     int getAttrInt(int attrId) {
         return m_pDetInstance ? m_pDetInstance->GetAttrInt(attrId) : 0;

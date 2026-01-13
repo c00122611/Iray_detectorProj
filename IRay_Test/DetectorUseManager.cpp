@@ -44,7 +44,7 @@ void DetectorUseManager::startOffsetCalibration() {
 
     // 弹窗提示：确保无 X 射线
     QMessageBox::information(nullptr, QString::fromLocal8Bit("校准提示"),
-        QString::fromLocal8Bit("⚠️ 请确保探测器处于完全黑暗环境（无 X 射线照射）！\n"),
+        QString::fromLocal8Bit("请确保探测器处于完全黑暗环境（无 X 射线照射）！\n"),
         QString::fromLocal8Bit("点击“确定”开始 Offset 校准。"));
 
     int ret = m_detectorUse.GenerateOffsetTemplate();
@@ -161,7 +161,6 @@ void DetectorUseManager::onFluoroTimerTimeout()
     }
 }
 
-// DetectorUseManager.cpp
 
 
 // DetectorUseManager.cpp
@@ -247,5 +246,55 @@ void DetectorUseManager::stopAveragedAcquisition()
             emit logMessage(QString::fromLocal8Bit("警告：采集线程未在2秒内退出"));
         }
     }
+}
+
+void DetectorUseManager::startPreAcquireAcquisition(const QString& saveDir)
+{
+    QDir dir(saveDir);
+    if (!dir.exists()) {
+        emit logMessage(QString::fromLocal8Bit("错误：保存路径不存在: %1").arg(saveDir));
+        return;
+    }
+    QThread* worker = QThread::create([this, saveDir]() {
+        int ret = m_detectorUse.initImageBuffer();
+        if (ret != Err_OK) {
+            emit logMessage(QString::fromLocal8Bit("PreAcquire: 初始化缓存失败 %1").arg(ret));
+            return;
+        }
+
+        // 子线程调用 preAcquire
+        ret = m_detectorUse.preAcquire(); // 内部调用 Invoke(Cmd_ClearAcq)
+        if (ret != Err_OK && ret != Err_TaskPending) {
+            emit logMessage(QString::fromLocal8Bit("PreAcquire: 启动失败 %1").arg(ret));
+            return;
+        }
+
+        emit logMessage(QString::fromLocal8Bit("PreAcquire 已启动，等待图像..."));
+
+        // 3. 等待并拉取单帧（最多5秒）
+        QElapsedTimer timer;
+        timer.start();
+        cv::Mat frame;
+        while (timer.elapsed() < 5000) {
+            auto [img, _] = m_detectorUse.getCurrentFrameWithIndex();
+            if (!img.empty()) {
+                frame = img;
+                break;
+            }
+            QThread::msleep(10);
+        }
+
+        if (frame.empty()) {
+            emit logMessage(QString::fromLocal8Bit("PreAcquire 超时，未收到图像"));
+            return;
+        }
+
+        // 4. 发送结果（与 averagedImageReady 完全一致）
+        emit preAcquiredImageReady(frame,saveDir);
+        emit logMessage(QString::fromLocal8Bit("PreAcquire 图像获取成功"));
+        });
+
+    connect(worker, &QThread::finished, worker, &QObject::deleteLater);
+    worker->start();
 }
 

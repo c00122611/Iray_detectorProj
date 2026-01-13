@@ -24,6 +24,18 @@ IrayWidget::IrayWidget(QWidget *parent)
     connect(m_manager, &DetectorUseManager::newFrameReceived,this, &IrayWidget::onNewFrameReceived);
     connect(ui.startDisplayButton, &QPushButton::clicked, m_manager, &DetectorUseManager::startFluoroDisplay);
     connect(ui.endDisplayButton, &QPushButton::clicked, m_manager, &DetectorUseManager::stopFluoroDisplay);
+    //预采集按钮
+    connect(m_manager, &DetectorUseManager::preAcquiredImageReady, this, &IrayWidget::onPreAcqImageReceived);
+    connect(ui.preAcquireButton, &QPushButton::clicked, this, [=]() {
+        // 弹出文件夹选择框
+        QString saveDir = QFileDialog::getExistingDirectory(
+            this, QString::fromLocal8Bit("选择平均图保存路径"),
+            QStandardPaths::writableLocation(QStandardPaths::PicturesLocation)
+        );
+        if (saveDir.isEmpty()) return;
+
+        m_manager->startPreAcquireAcquisition(saveDir);
+        });
     
     connect(m_manager, &DetectorUseManager::averagedImageReady,this, &IrayWidget::onAveragedImageReceived);
     connect(ui.btnStartAvg, &QPushButton::clicked, this, [=]() {
@@ -99,6 +111,25 @@ void IrayWidget::onAveragedImageReceived(const cv::Mat& img, int groupIndex, con
         ui.logTextEdit->append(QString("保存失败: %1").arg(fullPath));
     }
 }
+void IrayWidget::onPreAcqImageReceived(const cv::Mat& img, const QString& savePath) {
+    if (img.empty() || img.type() != CV_16UC1) {
+        ui.logTextEdit->append(QString::fromLocal8Bit("收到无效平均图"));
+        return;
+    }
+    // 构造文件名：Avg_Group000.raw
+    QString fileName = QString("PreacqImg.raw");
+    QString fullPath = savePath + "/" + fileName;
 
+    // 保存为 .raw（纯二进制，无头）
+    QFile file(fullPath);
+    if (file.open(QIODevice::WriteOnly)) {
+        file.write(reinterpret_cast<const char*>(img.data), img.total() * img.elemSize());
+        file.close();
+        ui.logTextEdit->append(QString::fromLocal8Bit("preImg已保存: %1").arg(fullPath));
+    }
+    else {
+        ui.logTextEdit->append(QString::fromLocal8Bit("保存失败: %1").arg(fullPath));
+    }
+}
 
 
