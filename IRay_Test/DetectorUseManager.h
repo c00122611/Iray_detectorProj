@@ -30,14 +30,15 @@ class DetectorUseManager : public QObject {
 public:
     explicit DetectorUseManager(QObject* parent = nullptr); 
     ~DetectorUseManager();
-    
+    int getAttrInt(int attrId);
+    void stopStateMonitoring();
+    void startStateMonitoring();
+    QString convertStateToString(int stateEnum);
 public slots:
     void connectDevice();
     void disconnectDevice();
     void startOffsetCalibration();
     void startGainDefectCalibration();
-
-
     void onSelectModeClicked();
     void onFluoroTimerTimeout();
     //实时显示
@@ -47,6 +48,7 @@ public slots:
     void startPreAcquireAcquisition(const QString& saveDir);
     void startAveragedAcquisition(int avgFrames, int totalGroups, const QString& saveDir);
     void stopAveragedAcquisition(); 
+    void onPollTimeout();
 
 signals:
     void logMessage(const QString& msg);
@@ -58,6 +60,9 @@ signals:
     void preAcquiredImageReady(const cv::Mat& img, const QString& savePath);
     void stageChanged(GainDefectStage stage, const QString& suggestedKV, int expectedGray);
     void currentGrayUpdated(int grayValue);
+    void detectorStateChanged(const QString& stateText); 
+
+
 private:
     DetectorUse m_detectorUse;
     //日志函数
@@ -70,4 +75,5 @@ private:
 
     GainDefectStage m_currentStage = GainDefectStage::Idle;
     QTimer* m_grayTimer = nullptr;
+    QTimer* m_stateTimer = nullptr;
 };

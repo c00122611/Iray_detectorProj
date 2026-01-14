@@ -218,6 +218,7 @@ int DetectorUse::acquireLightField(int pointIndex, int framesPerPoint)
     m_pDetInstance->ClearImageBuf();
     // 3. 启动亮场采集
     m_pDetInstance->Invoke(Cmd_StartAcq);
+    Sleep(300);
     // 4. 等待采集完成，并定期拉取图像以更新 CenterValue
     int nValid = 0;
     while (nValid < framesPerPoint && !m_bError) {
@@ -230,6 +231,7 @@ int DetectorUse::acquireLightField(int pointIndex, int framesPerPoint)
     }
 
     // 5. 禁用拉取模式（可选，恢复默认）
+    m_pDetInstance->Invoke(Cmd_StopAcq);
     m_pDetInstance->UseImageBuf(0);
 
     return m_bError ? Err_Unknown : Err_OK;
@@ -249,18 +251,15 @@ int DetectorUse::acquireDarkField(int framesPerPoint)
 
     // 3. 启动暗场采集
     m_pDetInstance->Invoke(Cmd_ForceDarkContinuousAcq, 0);
-
+    Sleep(300);
     // 4. 等待采集完成
     int nValid = 0;
     while (nValid < framesPerPoint && !m_bError) {
         nValid = m_pDetInstance->GetAttrInt(Attr_OffsetValidFrames);
-
-        // 暗场通常不需要灰度值，但为一致性可保留
-        // getCurrentFrameWithIndex();
-
+        getCurrentFrameWithIndex();
         Sleep(100);
     }
-
+    m_pDetInstance->Invoke(Cmd_StopAcq);
     // 5. 禁用拉取模式
     m_pDetInstance->UseImageBuf(0);
 
@@ -380,7 +379,15 @@ int DetectorUse::initImageBuffer() {
     size_t frameSize = width * height * 2;
 
     // 预分配 10 帧缓存
-    return m_pDetInstance->UseImageBuf(static_cast<unsigned long long>(frameSize * 10));
+    m_pDetInstance->UseImageBuf(static_cast<unsigned long long>(frameSize * 20));
+    int ret = m_pDetInstance->Invoke(Cmd_StartAcq);
+    m_pDetInstance->ClearImageBuf();
+    if (ret != Err_OK) {
+        logMessage("StartAcq failed: %s\n", m_pDetInstance->GetErrorInfo(ret).c_str());
+        return ret;
+    }
+    Sleep(300);
+    return m_bError ? Err_Unknown : Err_OK;
 }
 int DetectorUse::startContinuousAcquisition() {
     if (!m_pDetInstance) return Err_NotInitialized;
@@ -390,13 +397,6 @@ int DetectorUse::startContinuousAcquisition() {
         Enm_CorrectOp_SW_Gain |
         Enm_CorrectOp_SW_Defect;
     m_pDetInstance->SetAttr(Attr_CurrentCorrectOption, correctOpt);
-
-    // 启动连续采集
-    int ret = m_pDetInstance->Invoke(Cmd_StartAcq);
-    if (ret != Err_OK && ret != Err_TaskPending) {
-        logMessage("StartAcq failed: %s\n", m_pDetInstance->GetErrorInfo(ret).c_str());
-        return ret;
-    }
     logMessage("Continuous acquisition started.\n");
     return Err_OK;
 }
@@ -413,7 +413,7 @@ int DetectorUse::stopContinuousAcquisition() {
     return ret;
 }
     
-//每个获取的图像数据赋予一个 帧号，确保图像数据不重复
+//每个获取的 图像数据赋予一个 帧号，确保图像数据不重复
 std::pair<cv::Mat, int> DetectorUse::getCurrentFrameWithIndex()
 {
     if (!m_pDetInstance) return { cv::Mat(), -1 };
@@ -506,6 +506,20 @@ int DetectorUse::preAcquire()
     }
 
     logMessage("PreAcquire started.");
+}
+
+
+int DetectorUse::getAttrInt(int attrId) {
+    return m_pDetInstance ? m_pDetInstance->GetAttrInt(attrId) : 0;
+}
+
+int DetectorUse::getDetectorState()
+{
+    int state = Enm_State_Unknown;
+    if (m_pDetInstance) {
+        m_pDetInstance->GetAttr(Attr_State, state);
+    }
+    return state;
 }
 
     

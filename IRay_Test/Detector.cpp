@@ -304,7 +304,12 @@ int CDetector::GetAttr(int nAttrID, std::string& retV)
     retV = var.val.strVal;
     return Err_OK;
 }
-
+int CDetector::GetAttrInt(int nAttrID)
+{
+	int nValue = 0;
+	GetAttr(nAttrID, nValue);
+	return nValue;
+}
 
 string CDetector::GetErrorInfo(int nErrorCode)
 {

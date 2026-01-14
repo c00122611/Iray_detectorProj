@@ -131,12 +131,7 @@ public:
     int GetAttr(int nAttrID, float& retV);
     int GetAttr(int nAttrID, std::string& retV);
 
-    int GetAttrInt(int nAttrID)
-    {
-        int nValue = 0;
-        GetAttr(nAttrID, nValue);
-        return nValue;
-    }
+    int GetAttrInt(int nAttrID);
 
     FPDRESULT Invoke(int nCmdId)
     {

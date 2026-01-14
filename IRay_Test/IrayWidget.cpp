@@ -17,6 +17,8 @@ IrayWidget::IrayWidget(QWidget *parent)
     connect(m_manager, &DetectorUseManager::connectionChanged, this,&IrayWidget::onConnectionChanged);
     connect(m_manager, &DetectorUseManager::stageChanged, this, &IrayWidget::onStageChanged);
     connect(m_manager, &DetectorUseManager::currentGrayUpdated, this, &IrayWidget::onCurrentGrayUpdated);
+    connect(m_manager, &DetectorUseManager::detectorStateChanged,this, &IrayWidget::onDetectorStateChanged);
+    m_manager->startStateMonitoring();
     //图像实时显示按钮
     connect(m_manager, &DetectorUseManager::newFrameReceived,this, &IrayWidget::onNewFrameReceived);
     connect(ui.startDisplayButton, &QPushButton::clicked, m_manager, &DetectorUseManager::startFluoroDisplay);
@@ -137,16 +139,33 @@ void IrayWidget::onStageChanged(GainDefectStage stage, const QString& suggestedK
 {
     QString stageText;
     switch (stage) {
-    case GainDefectStage::PreparingLight: stageText = "准备亮场"; break;
-    case GainDefectStage::AcquiringLight: stageText = "采集亮场中..."; break;
-    case GainDefectStage::PreparingDark:  stageText = "请关闭射线"; break;
-    case GainDefectStage::AcquiringDark:  stageText = "采集暗场中..."; break;
-    case GainDefectStage::GeneratingTemplate: stageText = "生成模板中..."; break;
+    case GainDefectStage::PreparingLight: stageText = QString::fromLocal8Bit("准备亮场"); break;
+    case GainDefectStage::AcquiringLight: stageText = QString::fromLocal8Bit("采集亮场中..."); break;
+    case GainDefectStage::PreparingDark:  stageText = QString::fromLocal8Bit("请关闭射线"); break;
+    case GainDefectStage::AcquiringDark:  stageText = QString::fromLocal8Bit("采集暗场中..."); break;
+    case GainDefectStage::GeneratingTemplate: stageText = QString::fromLocal8Bit("生成模板中..."); break;
     default: stageText = "空闲";
     }
     ui.lblStage->setText(stageText);
     ui.lblSuggestedKV->setText(suggestedKV);
     ui.lblExpectedValue->setText(expectedGray > 0 ? QString::number(expectedGray) : "--");
 }
+void IrayWidget::onDetectorStateChanged(const QString& state)
+{
+    QString text = tr("探测器状态: %1").arg(state);
+    ui.DetectorStateLabel->setText(text);
 
+    // 根据状态设置颜色
+    QPalette palette = ui.DetectorStateLabel->palette();
+    if (state == QStringLiteral("就绪")) {
+        palette.setColor(QPalette::WindowText, Qt::green);
+    }
+    else if (state == QStringLiteral("忙")) {
+        palette.setColor(QPalette::WindowText, Qt::red);
+    }
+    else {
+        palette.setColor(QPalette::WindowText, Qt::gray);
+    }
+    ui.DetectorStateLabel->setPalette(palette);
+}
 

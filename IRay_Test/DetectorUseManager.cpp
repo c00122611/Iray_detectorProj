@@ -1,17 +1,24 @@
 ﻿#include "DetectorUseManager.h"
 
 DetectorUseManager::DetectorUseManager(QObject* parent)
-    : QObject(parent)
+    : QObject(parent), m_stateTimer(new QTimer(this))
 {
     // 设置日志回调（处理 SDK 的 GBK 字符串）
     m_detectorUse.setLogCallback([this](const std::string& msg) {
         QString qMsg = QString::fromLocal8Bit(msg.c_str());
         logInfo(qMsg); 
         });
+    // 连接定时器信号到槽（必须在构造函数或初始化函数中做）
+    connect(m_stateTimer, &QTimer::timeout, this, &DetectorUseManager::onPollTimeout);
 }
 
 DetectorUseManager::~DetectorUseManager() {
     m_detectorUse.Disconnect();
+}
+
+int DetectorUseManager::getAttrInt(int attrId)
+{
+    return m_detectorUse.getAttrInt(attrId);
 }
 
 void DetectorUseManager::logInfo(const QString& msg) {
@@ -47,14 +54,17 @@ void DetectorUseManager::startOffsetCalibration() {
         QString::fromLocal8Bit("请确保探测器处于完全黑暗环境（无 X 射线照射）！\n"),
         QString::fromLocal8Bit("点击“确定”开始 Offset 校准。"));
 
-    int ret = m_detectorUse.GenerateOffsetTemplate();
-    if (ret == Err_OK) {
-        logInfo(QString::fromLocal8Bit("Offset 校准成功完成！"));
+    int s_TotalNumber = m_detectorUse.getAttrInt(Attr_OffsetTotalFrames);
+    if (m_detectorUse.acquireDarkField(s_TotalNumber) == Err_OK) {
+        int ret = m_detectorUse.GenerateOffsetTemplate();
+        if (ret == Err_OK) {
+            logInfo(QString::fromLocal8Bit("Offset 校准成功完成！"));
+        }
+        else {
+            logInfo(QString::fromLocal8Bit("Offset 校准失败！"));
+        }
+        emit calibrationFinished(ret == Err_OK);
     }
-    else {
-        logInfo(QString::fromLocal8Bit("Offset 校准失败！"));
-    }
-    emit calibrationFinished(ret == Err_OK);
 }
 void DetectorUseManager::startGainDefectCalibration()
 {
@@ -79,7 +89,6 @@ void DetectorUseManager::startGainDefectCalibration()
         return;
     }
 
-    // 步骤2: 定义校准点（严格按 NDT1717M 手册 Table 6.4.1）
     struct PointConfig {
         QString voltage;      // 推荐电压
         int expectedGray;     // 目标灰度
@@ -99,7 +108,7 @@ void DetectorUseManager::startGainDefectCalibration()
 
         // === 步骤3.1：提示用户设置高压并开启射线 ===
         m_currentStage = GainDefectStage::PreparingLight;
-        emit stageChanged(m_currentStage, pt.voltage, pt.expectedGray); // 👈 新增参数
+        emit stageChanged(m_currentStage, pt.voltage, pt.expectedGray); //
 
         QString prepMsg = QString::fromLocal8Bit(
             "【校准点 %1/%2】\n\n"
@@ -182,15 +191,20 @@ void DetectorUseManager::onSelectModeClicked() {
     }
 }
 
-// DetectorUseManager.cpp
+// 可视化显示 定时器轮询 
 void DetectorUseManager::startFluoroDisplay()
 {   
+    int ret = m_detectorUse.initImageBuffer();
+    if (ret != Err_OK) {
+        logMessage( QString::fromLocal8Bit("initImageBuffer:初始化失败 %1").arg(ret));
+        return;
+    }
 
     if (!m_fluoroTimer) {
         m_fluoroTimer = new QTimer(this);
         connect(m_fluoroTimer, &QTimer::timeout, this, &DetectorUseManager::onFluoroTimerTimeout);
         //初始化数据缓存
-        int ret = m_detectorUse.initImageBuffer();
+        
         if (ret != Err_OK) {
             emit logMessage(QString::fromLocal8Bit("PreAcquire: 初始化缓存失败 %1").arg(ret));
             return;
@@ -200,7 +214,6 @@ void DetectorUseManager::startFluoroDisplay()
     m_fluoroTimer->start(500); // 可根据实际帧率动态设置
     logInfo("Fluoro 显示已启动");
 }
-
 void DetectorUseManager::stopFluoroDisplay()
 {
     if (m_fluoroTimer && m_fluoroTimer->isActive()) {
@@ -208,7 +221,6 @@ void DetectorUseManager::stopFluoroDisplay()
         logInfo("Fluoro 显示已停止");
     }
 }
-
 void DetectorUseManager::onFluoroTimerTimeout()
 {
     auto [frame, frameNo] = m_detectorUse.getCurrentFrameWithIndex();
@@ -219,9 +231,7 @@ void DetectorUseManager::onFluoroTimerTimeout()
     }
 }
 
-
-
-// DetectorUseManager.cpp
+//平均模式采集
 void DetectorUseManager::startAveragedAcquisition(int avgFrames, int totalGroups, const QString& saveDir)
 {
     if (avgFrames <= 0 || totalGroups <= 0) {
@@ -305,6 +315,7 @@ void DetectorUseManager::stopAveragedAcquisition()
         }
     }
 }
+//预采集
 void DetectorUseManager::startPreAcquireAcquisition(const QString& saveDir)
 {
     QDir dir(saveDir);
@@ -354,4 +365,39 @@ void DetectorUseManager::startPreAcquireAcquisition(const QString& saveDir)
     connect(worker, &QThread::finished, worker, &QObject::deleteLater);
     worker->start();
 }
+
+void DetectorUseManager::startStateMonitoring()
+{
+    if (!m_stateTimer->isActive()) {
+        m_stateTimer->start(500); // 每 500ms 查询一次
+    }
+}
+
+void DetectorUseManager::stopStateMonitoring()
+{
+    if (m_stateTimer->isActive()) {
+        m_stateTimer->stop();
+    }
+}
+QString DetectorUseManager::convertStateToString(int stateEnum)
+{
+    switch (stateEnum) {
+    case Enm_State_Ready:
+        return QStringLiteral("就绪");
+    case Enm_State_Busy:
+        return QStringLiteral("忙");
+    case Enm_State_Sleeping:
+        return QStringLiteral("休眠");
+    case Enm_State_Unknown:
+    default:
+        return QStringLiteral("未知");
+    }
+}
+void DetectorUseManager::onPollTimeout()
+{
+    int stateEnum = m_detectorUse.getDetectorState();
+    QString stateStr = convertStateToString(stateEnum);
+    emit detectorStateChanged(stateStr);
+}
+
 
