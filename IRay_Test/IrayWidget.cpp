@@ -16,6 +16,10 @@ IrayWidget::IrayWidget(QWidget *parent)
     connect(m_manager, &DetectorUseManager::logMessage, this, &IrayWidget::onLogMessage);
     connect(m_manager, &DetectorUseManager::connectionChanged, this,&IrayWidget::onConnectionChanged);
 
+    connect(m_manager, &DetectorUseManager::currentGrayUpdated,this, &IrayWidget::onCurrentGrayUpdated);
+
+    connect(m_manager, &DetectorUseManager::stageChanged, this, &IrayWidget::onStageChanged);
+    connect(m_manager, &DetectorUseManager::currentGrayUpdated, this, &IrayWidget::onCurrentGrayUpdated);
     //图像实时显示按钮
     connect(m_manager, &DetectorUseManager::newFrameReceived,this, &IrayWidget::onNewFrameReceived);
     connect(ui.startDisplayButton, &QPushButton::clicked, m_manager, &DetectorUseManager::startFluoroDisplay);
@@ -126,6 +130,26 @@ void IrayWidget::onPreAcqImageReceived(const cv::Mat& img, const QString& savePa
     else {
         ui.logTextEdit->append(QString::fromLocal8Bit("保存失败: %1").arg(fullPath));
     }
+}
+void IrayWidget::onCurrentGrayUpdated(int grayValue)
+{
+    ui.lblCurrentGray->setText(QString::number(grayValue));
+}
+
+void IrayWidget::onStageChanged(GainDefectStage stage, const QString& suggestedKV, int expectedGray)
+{
+    QString stageText;
+    switch (stage) {
+    case GainDefectStage::PreparingLight: stageText = "准备亮场"; break;
+    case GainDefectStage::AcquiringLight: stageText = "采集亮场中..."; break;
+    case GainDefectStage::PreparingDark:  stageText = "请关闭射线"; break;
+    case GainDefectStage::AcquiringDark:  stageText = "采集暗场中..."; break;
+    case GainDefectStage::GeneratingTemplate: stageText = "生成模板中..."; break;
+    default: stageText = "空闲";
+    }
+    ui.lblStage->setText(stageText);
+    ui.lblSuggestedKV->setText(suggestedKV);
+    ui.lblExpectedValue->setText(expectedGray > 0 ? QString::number(expectedGray) : "--");
 }
 
 

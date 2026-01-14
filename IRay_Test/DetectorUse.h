@@ -31,7 +31,8 @@ private:
     // 校准需要的帧数统计
     int m_TotalDarkFrames;
     int m_TotalLightFrames;
-    int m_currentCenterGray;
+    mutable std::mutex m_grayMutex;
+    int m_currentCenterGray = 0; // 缓存最新灰度值
     bool m_bError;
     bool m_bConnected = false; //连接状态
     static DetectorUse* s_Instance;
@@ -80,6 +81,9 @@ public:
     int startContinuousAcquisition();
     int stopContinuousAcquisition();
     std::pair<cv::Mat, int> getCurrentFrameWithIndex();
+    std::tuple<cv::Mat, int, int> getCurrentFrameWithIndex_withcurGray();
+    int getCurrentCenterGrayValue();
+
     int preAcquire(); // 新增接口
     // 获取 PreAcquire 图像（Pull 模式）
     std::pair<cv::Mat, int>getPreAcquiredFrame();

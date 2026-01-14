@@ -216,7 +216,23 @@ FPDRESULT CDetector::SetAttr(int nAttrID, const char* strValue)
 	}
 	return result;
 }
+FPDRESULT CDetector::GetImageFromBufEx(
+	void* pImage, int nImageDataSize,
+	void* pProperties, int nPropListMemSize,
+	int& nFrameNum)
+{
+	if (!m_pFnGetImageFromBuf) return Err_NotInitialized;
 
+	IRayVariantMap propList;
+	propList.nItemCount = nPropListMemSize / sizeof(IRayVariantMapItem);
+	propList.pItems = static_cast<IRayVariantMapItem*>(pProperties); // 使用外部缓冲区
+
+	int result = m_pFnGetImageFromBuf(m_nDetectorID, pImage, nImageDataSize, propList.pItems, nPropListMemSize);
+	if (result == Err_OK) {
+		nFrameNum = GetImagePropertyInt(&propList, Enm_ImageTag_FrameNo);
+	}
+	return result;
+}
 
 int CDetector::GetAttr(int nAttrID, AttrResult& result)
 {

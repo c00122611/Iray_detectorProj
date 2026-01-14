@@ -56,108 +56,108 @@ void DetectorUseManager::startOffsetCalibration() {
     }
     emit calibrationFinished(ret == Err_OK);
 }
-// 增益校正+defect校正逻辑实现
-void DetectorUseManager::startGainDefectCalibration() {
-    logInfo(QString::fromLocal8Bit("启动 Gain + Defect 校准"));
+void DetectorUseManager::startGainDefectCalibration()
+{
+    logInfo(QString::fromLocal8Bit("启动 Gain + Defect 校准（阻塞式+UI反馈）..."));
+
+    // 启动灰度定时器（每秒读取一次）
+    if (!m_grayTimer) {
+        m_grayTimer = new QTimer(this);
+        connect(m_grayTimer, &QTimer::timeout, this, [this]() {
+            int gray = m_detectorUse.getAttrInt(Enm_ImageTag_CenterValue); // SDK 属性直接读取
+            emit currentGrayUpdated(gray);
+            });
+    }
+    m_grayTimer->start(1000);
 
     // 步骤1: 初始化事务
     int ret = m_detectorUse.gainInit();
     if (ret != Err_OK) {
         logInfo(QString::fromLocal8Bit("GainInit 失败"));
+        m_grayTimer->stop();
         emit calibrationFinished(false);
         return;
     }
 
-    // 步骤2: 定义校准点（严格按 NDT1717M 手册 Table 6.4.1, P57）
+    // 步骤2: 定义校准点（严格按 NDT1717M 手册 Table 6.4.1）
     struct PointConfig {
-        QString voltage;
-        int expectedGray;
+        QString voltage;      // 推荐电压
+        int expectedGray;     // 目标灰度
     };
     QList<PointConfig> points = {
-        {QString::fromLocal8Bit("50kV"), 2000},   // 手册推荐值
-        {QString::fromLocal8Bit("110kV"), 12000},
-        {QString::fromLocal8Bit("70kV"), 2000}
+        {QString::fromLocal8Bit("50kV"), 2000},   // 最低 KV
+        {QString::fromLocal8Bit("110kV"), 12000}, // 最高 KV
+        {QString::fromLocal8Bit("70kV"), 2000}    // 中间 KV
     };
 
     int nTotalFrames = m_detectorUse.getAttrInt(Attr_GainTotalFrames);
     int nFramesPerPoint = nTotalFrames / points.size();
 
-    logInfo(QString::fromLocal8Bit("共 %1 个校准点，每点采集 %2 帧")
-        .arg(points.size()).arg(nFramesPerPoint));
-
     // 步骤3: 循环每个剂量点
     for (int i = 0; i < points.size(); ++i) {
         const auto& pt = points[i];
 
-        // 3.1 提示用户设置高压
-        QString prompt = QString::fromLocal8Bit(
+        // === 步骤3.1：提示用户设置高压并开启射线 ===
+        m_currentStage = GainDefectStage::PreparingLight;
+        emit stageChanged(m_currentStage, pt.voltage, pt.expectedGray); // 👈 新增参数
+
+        QString prepMsg = QString::fromLocal8Bit(
             "【校准点 %1/%2】\n\n"
             "请将 X 光机设置为：\n"
             "   • 电压：%3\n"
             "   • 目标图像平均灰度：%4\n\n"
-            "调整曝光参数后，点击“确定”开始亮场采集。")
+            "调整好参数后，请开启 X 射线源。\n"
+            "确认射线已开启，点击“确定”开始亮场采集。")
             .arg(i + 1).arg(points.size())
             .arg(pt.voltage)
             .arg(pt.expectedGray);
 
         QMessageBox::information(nullptr,
-            QString::fromLocal8Bit("校准准备"),
-            prompt);
+            QString::fromLocal8Bit("准备亮场采集"),
+            prepMsg);
 
-        // 3.2 采集亮场
-        logInfo(QString::fromLocal8Bit("开始采集亮场（点 %1，%2，目标灰度 %3）...")
-            .arg(i + 1).arg(pt.voltage).arg(pt.expectedGray));
+        // === 步骤3.2：采集亮场 ===
+        m_currentStage = GainDefectStage::AcquiringLight;
+        emit stageChanged(m_currentStage, pt.voltage, pt.expectedGray);
+        logInfo(QString::fromLocal8Bit("开始采集亮场（点 %1，%2）...")
+            .arg(i + 1).arg(pt.voltage));
         m_detectorUse.acquireLightField(i, nFramesPerPoint);
 
-        // 3.3 获取当前灰度并让用户确认（使用 StandardButton 避免 E0042 错误）
-        int currentGray = m_detectorUse.getCurrentCenterGrayValue();
-        QString confirmMsg = QString::fromLocal8Bit(
-            "【亮场采集完成】\n"
-            "当前图像平均灰度：%1\n"
-            "目标灰度：%2\n\n"
-            "如果灰度符合要求，请点击“Accept”继续。\n"
-            "如果不符合，请调整 kV/mAs 后重启校准流程。")
-            .arg(currentGray).arg(pt.expectedGray);
+        // === 步骤3.3：提示用户关闭 X 射线 ===
+        m_currentStage = GainDefectStage::PreparingDark;
+        emit stageChanged(m_currentStage, pt.voltage, pt.expectedGray);
 
-        QMessageBox msgBox;
-        msgBox.setWindowTitle(QString::fromLocal8Bit("灰度确认"));
-        msgBox.setText(confirmMsg);
-        msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-        msgBox.button(QMessageBox::Ok)->setText(QString::fromLocal8Bit("Accept"));
-        msgBox.button(QMessageBox::Cancel)->setText(QString::fromLocal8Bit("Cancel"));
-        msgBox.setDefaultButton(QMessageBox::Ok);
-
-        int result = msgBox.exec();
-        if (result == QMessageBox::Cancel) {
-            logInfo(QString::fromLocal8Bit("用户取消校准"));
-            m_detectorUse.finishCalibrationProcess();
-            emit calibrationFinished(false);
-            return;
-        }
-        // 否则继续（Accept）
-        // 3.4 提示关闭 X 射线
         QMessageBox::information(nullptr,
-            QString::fromLocal8Bit("亮场完成"),
-            QString::fromLocal8Bit("请关闭 X 射线源，并等待至少 20 秒。\n\n"
-                "确认关闭后，点击“确定”开始暗场采集。"));
+            QString::fromLocal8Bit("亮场采集完成"),
+            QString::fromLocal8Bit("亮场采集已完成！\n\n"
+                "请立即关闭 X 射线源，并等待至少 20 秒确保无辐射残留。\n\n"
+                "确认射线已关闭，点击“确定”开始暗场采集。"));
 
-        // 3.5 采集暗场
+        // === 步骤3.4：采集暗场 ===
+        m_currentStage = GainDefectStage::AcquiringDark;
+        emit stageChanged(m_currentStage, pt.voltage, pt.expectedGray);
         logInfo(QString::fromLocal8Bit("开始采集暗场（点 %1）...").arg(i + 1));
         m_detectorUse.acquireDarkField(nFramesPerPoint);
     }
 
     // 步骤4: 生成模板
+    m_currentStage = GainDefectStage::GeneratingTemplate;
+    emit stageChanged(m_currentStage, "", 0);
     logInfo(QString::fromLocal8Bit("正在生成 Gain 和 Defect 校正模板..."));
     ret = m_detectorUse.GenerateGainAndDefectTemplates();
     if (ret != Err_OK) {
         logInfo(QString::fromLocal8Bit("模板生成失败"));
         m_detectorUse.finishCalibrationProcess();
+        m_grayTimer->stop();
         emit calibrationFinished(false);
         return;
     }
 
     // 步骤5: 清理
     m_detectorUse.finishCalibrationProcess();
+    m_grayTimer->stop();
+    m_currentStage = GainDefectStage::Finished;
+    emit stageChanged(m_currentStage, "", 0);
     logInfo(QString::fromLocal8Bit("Gain + Defect 校准成功完成！"));
     emit calibrationFinished(true);
 }

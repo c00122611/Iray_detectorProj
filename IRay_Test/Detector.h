@@ -203,7 +203,11 @@ public:
     FPDRESULT ClearImageBuf();
     FPDRESULT QueryImageBuf(int& nFrameNum, int& nImageSize, int& nPropListMemSize);
     FPDRESULT GetImageFromBuf(void* pImage, int nImageDataSize, int nPropListMemSize, int& nFrameNum);
-
+    FPDRESULT GetImageFromBufEx(
+        void* pImage, int nImageDataSize,
+        void* pProperties, int nPropListMemSize,
+        int& nFrameNum
+    );
     string    GetErrorInfo(int nErrorCode);
     string    GetSDKVersion();
 	int       DetectorID(){ return m_nDetectorID; }

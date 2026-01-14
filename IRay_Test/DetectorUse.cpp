@@ -57,14 +57,8 @@ void DetectorUse::SDKCallbackHandler(int nDetectorID, int nEventID, int nEventLe
             break;
         case Evt_Image:
         {   // TODO: 可在此处 emit 图像
-            IRayImage* pImg = (IRayImage*)pParam;
-            IRayVariantMapItem* pFirstItem = pImg->propList.pItems;
-            if (Enm_ImageTag_CenterValue == pFirstItem->nMapKey) {
-                s_Instance->m_currentCenterGray = pFirstItem->varMapVal.val.nVal;
-            }
             break;
         }
-        break;
         default:
             break;
         }
@@ -215,30 +209,61 @@ int DetectorUse::gainInit()
 int DetectorUse::acquireLightField(int pointIndex, int framesPerPoint)
 {
     logMessage("请开启射线（增益点 %d），开始采集亮场...\n", pointIndex + 1);
-    // 启动亮场采集
-    m_pDetInstance->Invoke(Cmd_StartAcq);
 
-    // 等待用户操作 + 采集完成
+    // 1. 启用拉取模式（必须）
+    int width = m_pDetInstance->GetAttrInt(Attr_Width);
+    int height = m_pDetInstance->GetAttrInt(Attr_Height);
+    size_t frameSize = width * height * 2; // 16-bit 图像
+    m_pDetInstance->UseImageBuf(frameSize * (framesPerPoint+5)); // 预分配 10 帧缓冲区
+    m_pDetInstance->ClearImageBuf();
+    // 3. 启动亮场采集
+    m_pDetInstance->Invoke(Cmd_StartAcq);
+    // 4. 等待采集完成，并定期拉取图像以更新 CenterValue
     int nValid = 0;
     while (nValid < framesPerPoint && !m_bError) {
         nValid = m_pDetInstance->GetAttrInt(Attr_GainValidFrames);
+
+        // 关键：主动拉取最新图像以解析 CenterValue
+        getCurrentFrameWithIndex();
+
         Sleep(100);
     }
+
+    // 5. 禁用拉取模式（可选，恢复默认）
+    m_pDetInstance->UseImageBuf(0);
+
     return m_bError ? Err_Unknown : Err_OK;
 }
 int DetectorUse::acquireDarkField(int framesPerPoint)
 {
-    logMessage("关闭射线，开始采集暗场...\n");
+    logMessage("开始采集暗场...\n");
 
-    // 启动暗场采集
+    // 1. 启用拉取模式
+    int width = m_pDetInstance->GetAttrInt(Attr_Width);
+    int height = m_pDetInstance->GetAttrInt(Attr_Height);
+    size_t frameSize = width * height * 2;
+    m_pDetInstance->UseImageBuf(frameSize * (framesPerPoint + 5));
+
+    // 2. 清空缓冲区
+    m_pDetInstance->ClearImageBuf();
+
+    // 3. 启动暗场采集
     m_pDetInstance->Invoke(Cmd_ForceDarkContinuousAcq, 0);
 
-    // 等待采集完成
+    // 4. 等待采集完成
     int nValid = 0;
     while (nValid < framesPerPoint && !m_bError) {
-        nValid = m_pDetInstance->GetAttrInt(Attr_OffsetValidFrames); // 注意：暗场用 OffsetValidFrames
+        nValid = m_pDetInstance->GetAttrInt(Attr_OffsetValidFrames);
+
+        // 暗场通常不需要灰度值，但为一致性可保留
+        // getCurrentFrameWithIndex();
+
         Sleep(100);
     }
+
+    // 5. 禁用拉取模式
+    m_pDetInstance->UseImageBuf(0);
+
     return m_bError ? Err_Unknown : Err_OK;
 }
 
@@ -392,7 +417,8 @@ int DetectorUse::stopContinuousAcquisition() {
 }
 
 //每个获取的图像数据赋予一个 帧号，确保图像数据不重复
-std::pair<cv::Mat, int> DetectorUse::getCurrentFrameWithIndex() {
+std::pair<cv::Mat, int> DetectorUse::getCurrentFrameWithIndex()
+{
     if (!m_pDetInstance) return { cv::Mat(), -1 };
 
     int nFrameNum, nImageSize, nPropSize;
@@ -400,18 +426,72 @@ std::pair<cv::Mat, int> DetectorUse::getCurrentFrameWithIndex() {
         return { cv::Mat(), -1 };
     }
 
-    std::vector<uchar> buffer(nImageSize);
+    std::vector<uchar> imgBuffer(nImageSize);
+    std::vector<uchar> propBuffer(nPropSize);
     int frameIndex;
-    if (Err_OK != m_pDetInstance->GetImageFromBuf(buffer.data(), nImageSize, nPropSize, frameIndex)) {
+    if (Err_OK != m_pDetInstance->GetImageFromBufEx(
+        imgBuffer.data(), nImageSize,
+        propBuffer.data(), nPropSize, frameIndex)) {
         return { cv::Mat(), -1 };
+    }
+
+    //解析属性列表中的 CenterValue
+    IRayImagePropertList* pPropList = reinterpret_cast<IRayImagePropertList*>(propBuffer.data());
+    {
+        std::lock_guard<std::mutex> lock(m_grayMutex);
+        m_currentCenterGray = 0; // 默认
+        for (int i = 0; i < pPropList->nItemCount; ++i) {
+            if (pPropList->pItems[i].nMapKey == Enm_ImageTag_CenterValue) {
+                m_currentCenterGray = pPropList->pItems[i].varMapVal.val.nVal;
+                break;
+            }
+        }
     }
 
     int width = m_pDetInstance->GetAttrInt(Attr_Width);
     int height = m_pDetInstance->GetAttrInt(Attr_Height);
-    cv::Mat img = cv::Mat(height, width, CV_16UC1, buffer.data()).clone();
-    return { img, frameIndex };   
+    cv::Mat img = cv::Mat(height, width, CV_16UC1, imgBuffer.data()).clone();
+    return { img, frameIndex };
 }
+std::tuple<cv::Mat, int, int> DetectorUse::getCurrentFrameWithIndex_withcurGray()
+{
+    if (!m_pDetInstance) return { cv::Mat(), -1, 0 };
 
+    int nFrameNum, nImageSize, nPropSize;
+    if (Err_OK != m_pDetInstance->QueryImageBuf(nFrameNum, nImageSize, nPropSize)) {
+        return { cv::Mat(), -1, 0 };
+    }
+
+    std::vector<uchar> imgBuffer(nImageSize);
+    std::vector<uchar> propBuffer(nPropSize);
+    int frameIndex;
+    if (Err_OK != m_pDetInstance->GetImageFromBufEx(
+        imgBuffer.data(), nImageSize,
+        propBuffer.data(), nPropSize, frameIndex)) {
+        return { cv::Mat(), -1, 0 };
+    }
+
+    // 解析属性列表
+    IRayImagePropertList* pPropList = reinterpret_cast<IRayImagePropertList*>(propBuffer.data());
+    int centerValue = 0;
+    for (int i = 0; i < pPropList->nItemCount; ++i) {
+        if (pPropList->pItems[i].nMapKey == Enm_ImageTag_CenterValue) {
+            centerValue = pPropList->pItems[i].varMapVal.val.nVal;
+            break;
+        }
+    }
+
+    int width = m_pDetInstance->GetAttrInt(Attr_Width);
+    int height = m_pDetInstance->GetAttrInt(Attr_Height);
+    cv::Mat img = cv::Mat(height, width, CV_16UC1, imgBuffer.data()).clone();
+
+    return { img, frameIndex, centerValue };
+}
+int DetectorUse::getCurrentCenterGrayValue()
+{
+    std::lock_guard<std::mutex> lock(m_grayMutex);
+    return m_currentCenterGray;
+}
 // 获取 PreAcquire 图像（Pull 模式）
 std::pair<cv::Mat, int> DetectorUse::getPreAcquiredFrame()
 {

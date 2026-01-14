@@ -24,6 +24,8 @@ private slots:
 	void onNewFrameReceived(const QImage& image);
 	void onAveragedImageReceived(const cv::Mat& img, int groupIndex, const QString& saveDir);
 	void onPreAcqImageReceived(const cv::Mat& img, const QString& saveDir);
+	void onCurrentGrayUpdated(int grayValue);
+	void onStageChanged(GainDefectStage stage, const QString& suggestedKV, int expectedGray);
 private:
 	Ui::IrayWidgetClass ui;
 	DetectorUseManager* m_manager;

@@ -16,8 +16,15 @@
 
 
 
-
-
+enum class GainDefectStage {
+    Idle,
+    PreparingLight,     // 准备亮场（提示用户设 KV）
+    AcquiringLight,     // 正在采集亮场
+    PreparingDark,      // 提示关射线，准备暗场
+    AcquiringDark,      // 正在采集暗场
+    GeneratingTemplate, // 生成模板中
+    Finished
+};
 class DetectorUseManager : public QObject {
     Q_OBJECT
 public:
@@ -49,6 +56,8 @@ signals:
     void newFrameReceived(const QImage& image);
     void averagedImageReady(const cv::Mat& img, int groupIndex, const QString& savePath);
     void preAcquiredImageReady(const cv::Mat& img, const QString& savePath);
+    void stageChanged(GainDefectStage stage, const QString& suggestedKV, int expectedGray);
+    void currentGrayUpdated(int grayValue);
 private:
     DetectorUse m_detectorUse;
     //日志函数
@@ -58,4 +67,7 @@ private:
     QThread* m_workerThread = nullptr;
     volatile bool m_stopRequested = false;
     int m_lastFluoroFrameNo = -1;
+
+    GainDefectStage m_currentStage = GainDefectStage::Idle;
+    QTimer* m_grayTimer = nullptr;
 };
