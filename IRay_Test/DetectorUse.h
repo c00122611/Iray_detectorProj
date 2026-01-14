@@ -31,6 +31,7 @@ private:
     // 校准需要的帧数统计
     int m_TotalDarkFrames;
     int m_TotalLightFrames;
+    int m_currentCenterGray;
     bool m_bError;
     bool m_bConnected = false; //连接状态
     static DetectorUse* s_Instance;
@@ -69,6 +70,7 @@ public:
     int GenerateOffsetTemplate(); 
     int GenerateGainTemplate();
     int GenerateGainAndDefectTemplates();
+    int getCurrentCenterGrayValue() const;
     int AbortCalibration();
     int finishCalibrationProcess();
     int GetValidDarkFrames(); 

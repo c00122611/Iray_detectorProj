@@ -406,7 +406,6 @@ int CDetector::CloseDefectTemplateFile(void* pHandler)
 {
 	return m_pFnCloseDefectTemplateFile(pHandler);
 }
-
 std::string GetWorkDirPath()
 {
 	char buff[128] = {0};

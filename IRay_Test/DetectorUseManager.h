@@ -12,6 +12,11 @@
 #include <QElapsedTimer>
 #include <QFileDialog>
 #include <QStandardPaths>
+#include <QAbstractButton> 
+
+
+
+
 
 class DetectorUseManager : public QObject {
     Q_OBJECT
@@ -24,6 +29,8 @@ public slots:
     void disconnectDevice();
     void startOffsetCalibration();
     void startGainDefectCalibration();
+
+
     void onSelectModeClicked();
     void onFluoroTimerTimeout();
     //实时显示

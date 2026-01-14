@@ -56,8 +56,15 @@ void DetectorUse::SDKCallbackHandler(int nDetectorID, int nEventID, int nEventLe
             }
             break;
         case Evt_Image:
-            // TODO: 可在此处 emit 图像
+        {   // TODO: 可在此处 emit 图像
+            IRayImage* pImg = (IRayImage*)pParam;
+            IRayVariantMapItem* pFirstItem = pImg->propList.pItems;
+            if (Enm_ImageTag_CenterValue == pFirstItem->nMapKey) {
+                s_Instance->m_currentCenterGray = pFirstItem->varMapVal.val.nVal;
+            }
             break;
+        }
+        break;
         default:
             break;
         }
@@ -244,6 +251,9 @@ int DetectorUse::GenerateGainAndDefectTemplates()
     logMessage("生成 Defect 模板...\n");
     ret = m_pDetInstance->Invoke(Cmd_DefectGeneration);
     return ret;
+}
+int DetectorUse::getCurrentCenterGrayValue() const {
+    return m_currentCenterGray;
 }
 QString DetectorUse::getBaseMode(const QString& subset) {
     // 使用正则提取 "ModeX" 部分（支持 Mode1, Mode1-2, ModeFluoro-10 等）

@@ -4,13 +4,9 @@ IrayWidget::IrayWidget(QWidget *parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
-    initWidgetState();
+    //initWidgetState();
     // 创建工作线程和管理器
-    //m_workerThread = new QThread(this);
     m_manager = new DetectorUseManager();
-    //m_manager->moveToThread(m_workerThread);
-    // 启动线程
-    //m_workerThread->start();
     connect(ui.ConnectButton, &QPushButton::clicked, m_manager, &DetectorUseManager::connectDevice);
     connect(ui.offsetCalButton, &QPushButton::clicked, m_manager, &DetectorUseManager::startOffsetCalibration);
     connect(m_manager, &DetectorUseManager::applicationModeChanged,this, &IrayWidget::onApplicationModeChanged);
@@ -36,7 +32,7 @@ IrayWidget::IrayWidget(QWidget *parent)
 
         m_manager->startPreAcquireAcquisition(saveDir);
         });
-    
+    //带平均采集
     connect(m_manager, &DetectorUseManager::averagedImageReady,this, &IrayWidget::onAveragedImageReceived);
     connect(ui.btnStartAvg, &QPushButton::clicked, this, [=]() {
 
@@ -63,12 +59,12 @@ IrayWidget::~IrayWidget() {
 // IrayWidget.cpp
 void IrayWidget::onConnectionChanged(bool connected)
 {
-    ui.ConnectButton->setEnabled(!connected);
-    ui.offsetCalButton->setEnabled(connected);
-    ui.gainAndDefectCalButton->setEnabled(connected);
-    ui.startDisplayButton->setEnabled(connected);
-    ui.endDisplayButton->setEnabled(connected);
-    ui.selectModeButton->setEnabled(connected);
+    //ui.ConnectButton->setEnabled(!connected);
+    //ui.offsetCalButton->setEnabled(connected);
+    //ui.gainAndDefectCalButton->setEnabled(connected);
+    //ui.startDisplayButton->setEnabled(connected);
+    //ui.endDisplayButton->setEnabled(connected);
+    //ui.selectModeButton->setEnabled(connected);
 }
 
 void IrayWidget::onApplicationModeChanged(const QString& mode, bool success) {
