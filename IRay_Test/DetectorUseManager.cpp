@@ -184,10 +184,17 @@ void DetectorUseManager::onSelectModeClicked() {
 
 // DetectorUseManager.cpp
 void DetectorUseManager::startFluoroDisplay()
-{
+{   
+
     if (!m_fluoroTimer) {
         m_fluoroTimer = new QTimer(this);
         connect(m_fluoroTimer, &QTimer::timeout, this, &DetectorUseManager::onFluoroTimerTimeout);
+        //初始化数据缓存
+        int ret = m_detectorUse.initImageBuffer();
+        if (ret != Err_OK) {
+            emit logMessage(QString::fromLocal8Bit("PreAcquire: 初始化缓存失败 %1").arg(ret));
+            return;
+        }
     }
     // 启动 Fluoro 显示（例如 2fps → 500ms）
     m_fluoroTimer->start(500); // 可根据实际帧率动态设置

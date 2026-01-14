@@ -71,7 +71,6 @@ public:
     int GenerateOffsetTemplate(); 
     int GenerateGainTemplate();
     int GenerateGainAndDefectTemplates();
-    int getCurrentCenterGrayValue() const;
     int AbortCalibration();
     int finishCalibrationProcess();
     int GetValidDarkFrames(); 

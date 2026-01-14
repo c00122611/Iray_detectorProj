@@ -15,9 +15,6 @@ IrayWidget::IrayWidget(QWidget *parent)
     // 接收日志、图像等
     connect(m_manager, &DetectorUseManager::logMessage, this, &IrayWidget::onLogMessage);
     connect(m_manager, &DetectorUseManager::connectionChanged, this,&IrayWidget::onConnectionChanged);
-
-    connect(m_manager, &DetectorUseManager::currentGrayUpdated,this, &IrayWidget::onCurrentGrayUpdated);
-
     connect(m_manager, &DetectorUseManager::stageChanged, this, &IrayWidget::onStageChanged);
     connect(m_manager, &DetectorUseManager::currentGrayUpdated, this, &IrayWidget::onCurrentGrayUpdated);
     //图像实时显示按钮

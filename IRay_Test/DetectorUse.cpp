@@ -277,9 +277,6 @@ int DetectorUse::GenerateGainAndDefectTemplates()
     ret = m_pDetInstance->Invoke(Cmd_DefectGeneration);
     return ret;
 }
-int DetectorUse::getCurrentCenterGrayValue() const {
-    return m_currentCenterGray;
-}
 QString DetectorUse::getBaseMode(const QString& subset) {
     // 使用正则提取 "ModeX" 部分（支持 Mode1, Mode1-2, ModeFluoro-10 等）
     QRegularExpression re(R"(^([a-zA-Z]+\d+))");
@@ -415,7 +412,7 @@ int DetectorUse::stopContinuousAcquisition() {
     logMessage("StopAcq failed: %s\n", m_pDetInstance->GetErrorInfo(ret).c_str());
     return ret;
 }
-
+    
 //每个获取的图像数据赋予一个 帧号，确保图像数据不重复
 std::pair<cv::Mat, int> DetectorUse::getCurrentFrameWithIndex()
 {
@@ -427,25 +424,17 @@ std::pair<cv::Mat, int> DetectorUse::getCurrentFrameWithIndex()
     }
 
     std::vector<uchar> imgBuffer(nImageSize);
-    std::vector<uchar> propBuffer(nPropSize);
     int frameIndex;
-    if (Err_OK != m_pDetInstance->GetImageFromBufEx(
+    if (Err_OK != m_pDetInstance->GetImageFromBuf(
         imgBuffer.data(), nImageSize,
-        propBuffer.data(), nPropSize, frameIndex)) {
+        nPropSize, frameIndex)) { 
         return { cv::Mat(), -1 };
     }
+    int centerValue = m_pDetInstance->GetAttrInt(Enm_ImageTag_CenterValue);
 
-    //解析属性列表中的 CenterValue
-    IRayImagePropertList* pPropList = reinterpret_cast<IRayImagePropertList*>(propBuffer.data());
     {
         std::lock_guard<std::mutex> lock(m_grayMutex);
-        m_currentCenterGray = 0; // 默认
-        for (int i = 0; i < pPropList->nItemCount; ++i) {
-            if (pPropList->pItems[i].nMapKey == Enm_ImageTag_CenterValue) {
-                m_currentCenterGray = pPropList->pItems[i].varMapVal.val.nVal;
-                break;
-            }
-        }
+        m_currentCenterGray = centerValue;
     }
 
     int width = m_pDetInstance->GetAttrInt(Attr_Width);
